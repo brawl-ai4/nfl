@@ -3,940 +3,455 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFL Pack Simulator</title>
+<title>NFL Draft Pro</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --gold: #FFD700;
-    --gold2: #FFA500;
-    --gold-dark: #B8860B;
-    --nfl-blue: #013369;
-    --nfl-red: #D50A0A;
-    --bg: #0a0e1a;
-    --bg2: #111827;
-    --bg3: #1a2236;
-    --card-bg: #151c2e;
-    --text: #e8eaf6;
-    --muted: #8892a4;
-    --border: rgba(255,255,255,0.08);
-    --glow: rgba(255,215,0,0.3);
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Barlow', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* HEADER */
-  .header {
-    background: linear-gradient(135deg, var(--nfl-blue) 0%, #001f4d 100%);
-    border-bottom: 3px solid var(--nfl-red);
-    padding: 0 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 4px 30px rgba(0,0,0,0.5);
-  }
-  .logo {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 2rem;
-    letter-spacing: 3px;
-    color: white;
-    padding: 0.8rem 0;
-  }
-  .logo span { color: var(--nfl-red); }
-  .coins-display {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid var(--gold-dark);
-    border-radius: 50px;
-    padding: 0.5rem 1.2rem;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--gold);
-  }
-  .coin-icon {
-    width: 26px; height: 26px;
-    background: radial-gradient(circle at 35% 35%, #FFE55C, #FFD700, #B8860B);
-    border-radius: 50%;
-    border: 2px solid #8B6914;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px;
-    box-shadow: 0 0 10px rgba(255,215,0,0.4);
-    flex-shrink: 0;
-  }
-
-  /* NAV TABS */
-  .nav-tabs {
-    display: flex;
-    gap: 0;
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-  }
-  .nav-tab {
-    padding: 1rem 2rem;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: var(--muted);
-    cursor: pointer;
-    border: none;
-    background: none;
-    text-transform: uppercase;
-    position: relative;
-    transition: color 0.2s;
-    white-space: nowrap;
-  }
-  .nav-tab::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--nfl-red);
-    transform: scaleX(0);
-    transition: transform 0.2s;
-  }
-  .nav-tab.active { color: white; }
-  .nav-tab.active::after { transform: scaleX(1); }
-  .nav-tab:hover { color: white; }
-
-  /* PANELS */
-  .panel { display: none; padding: 2rem; }
-  .panel.active { display: block; }
-
-  /* SECTION TITLES */
-  .section-title {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 2.5rem;
-    letter-spacing: 3px;
-    margin-bottom: 0.3rem;
-    color: white;
-  }
-  .section-sub {
-    color: var(--muted);
-    font-size: 0.95rem;
-    margin-bottom: 2rem;
-  }
-
-  /* SPIN WHEEL PANEL */
-  .games-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    max-width: 1100px;
-  }
-  @media (max-width: 768px) { .games-grid { grid-template-columns: 1fr; } }
-
-  .game-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 2rem;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .game-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-  }
-  .game-card-title {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 1.8rem;
-    letter-spacing: 2px;
-    margin-bottom: 0.3rem;
-  }
-  .game-card-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
-
-  /* WHEEL */
-  .wheel-container {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-  }
-  .wheel-wrapper {
-    position: relative;
-    width: 300px;
-    height: 300px;
-    filter: drop-shadow(0 0 30px rgba(255,215,0,0.25));
-  }
-  .wheel-pointer {
-    position: absolute;
-    top: -18px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0; height: 0;
-    border-left: 16px solid transparent;
-    border-right: 16px solid transparent;
-    border-top: 32px solid var(--nfl-red);
-    z-index: 10;
-    filter: drop-shadow(0 4px 8px rgba(213,10,10,0.6));
-  }
-  #wheel-canvas {
-    border-radius: 50%;
-    box-shadow: 0 0 0 6px rgba(255,215,0,0.2), 0 0 0 12px rgba(255,215,0,0.08);
-  }
-
-  /* SLOT MACHINE */
-  .slot-machine {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-  }
-  .slot-reels {
-    display: flex;
-    gap: 8px;
-    background: #050810;
-    padding: 1rem;
-    border-radius: 12px;
-    border: 2px solid var(--border);
-  }
-  .slot-reel {
-    width: 70px; height: 80px;
-    overflow: hidden;
-    border: 1px solid rgba(255,215,0,0.2);
-    border-radius: 8px;
-    position: relative;
-    background: #0a0f1e;
-  }
-  .slot-item {
-    height: 80px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2rem;
-  }
-
-  /* COIN FLIP */
-  .coin-flip-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-  }
-  .flip-coin {
-    width: 120px; height: 120px;
-    cursor: pointer;
-    position: relative;
-    perspective: 600px;
-  }
-  .flip-coin-inner {
-    width: 100%; height: 100%;
-    position: relative;
-    transform-style: preserve-3d;
-    transition: transform 1s ease;
-  }
-  .coin-face, .coin-back {
-    position: absolute; inset: 0;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2.5rem;
-    backface-visibility: hidden;
-  }
-  .coin-face {
-    background: radial-gradient(circle at 35% 35%, #FFE55C, #FFD700, #B8860B);
-    border: 4px solid #8B6914;
-    box-shadow: 0 0 20px rgba(255,215,0,0.4);
-  }
-  .coin-back {
-    background: radial-gradient(circle at 35% 35%, #c0c0c0, #a0a0a0, #606060);
-    border: 4px solid #404040;
-    transform: rotateY(180deg);
-    font-size: 1.8rem;
-  }
-  .flipping { animation: coinFlip 1.5s ease forwards; }
-  @keyframes coinFlip {
-    0% { transform: rotateY(0); }
-    100% { transform: rotateY(1800deg); }
-  }
-
-  .btn {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    padding: 0.75rem 2rem;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.15s;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .btn:active { transform: scale(0.96); }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--nfl-red), #a00808);
-    color: white;
-    box-shadow: 0 4px 20px rgba(213,10,10,0.4);
-  }
-  .btn-primary:hover { box-shadow: 0 6px 30px rgba(213,10,10,0.6); transform: translateY(-1px); }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  .btn-gold {
-    background: linear-gradient(135deg, var(--gold), var(--gold2));
-    color: #1a0a00;
-    box-shadow: 0 4px 20px rgba(255,215,0,0.35);
-  }
-  .btn-gold:hover { box-shadow: 0 6px 30px rgba(255,215,0,0.55); transform: translateY(-1px); }
-  .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  .btn-outline {
-    background: transparent;
-    color: var(--muted);
-    border: 1px solid var(--border);
-  }
-  .btn-outline:hover { border-color: rgba(255,255,255,0.3); color: white; }
-
-  .result-badge {
-    padding: 0.5rem 1.5rem;
-    border-radius: 50px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.3rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    opacity: 0;
-    transition: opacity 0.4s;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .result-badge.show { opacity: 1; }
-  .result-badge.win {
-    background: rgba(255,215,0,0.15);
-    color: var(--gold);
-    border: 1px solid rgba(255,215,0,0.4);
-  }
-  .result-badge.lose {
-    background: rgba(213,10,10,0.15);
-    color: #ff6b6b;
-    border: 1px solid rgba(213,10,10,0.4);
-  }
-
-  /* PACK STORE */
-  .packs-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.5rem;
-    max-width: 1100px;
-  }
-  .pack-card {
-    border-radius: 16px;
-    padding: 1.5rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.25s;
-    position: relative;
-    overflow: hidden;
-  }
-  .pack-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .pack-card:hover { transform: translateY(-6px); }
-  .pack-card:hover::before { opacity: 1; }
-
-  .pack-bronze { background: linear-gradient(160deg, #2a1a0a, #1a1008); border: 1px solid #8B4513; }
-  .pack-bronze::before { box-shadow: inset 0 0 40px rgba(139,69,19,0.3); }
-  .pack-silver { background: linear-gradient(160deg, #1a1a20, #0e0e14); border: 1px solid #708090; }
-  .pack-silver::before { box-shadow: inset 0 0 40px rgba(112,128,144,0.3); }
-  .pack-gold { background: linear-gradient(160deg, #1a1500, #100e00); border: 1px solid #B8860B; }
-  .pack-gold::before { box-shadow: inset 0 0 40px rgba(184,134,11,0.4); }
-  .pack-elite { background: linear-gradient(160deg, #0d0020, #070010); border: 1px solid #8B00FF; }
-  .pack-elite::before { box-shadow: inset 0 0 50px rgba(139,0,255,0.35); }
-  .pack-legendary { background: linear-gradient(160deg, #1a0500, #0d0300); border: 1px solid #FF4500; }
-  .pack-legendary::before { box-shadow: inset 0 0 50px rgba(255,69,0,0.4); }
-
-  .pack-icon { font-size: 4rem; margin-bottom: 0.8rem; display: block; }
-  .pack-name {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 1.4rem;
-    letter-spacing: 2px;
-    margin-bottom: 0.3rem;
-  }
-  .pack-desc { font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.4; }
-  .pack-price {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(0,0,0,0.4);
-    border-radius: 50px;
-    padding: 0.4rem 1rem;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--gold);
-  }
-  .pack-rarity-bar {
-    display: flex;
-    gap: 3px;
-    justify-content: center;
-    margin-top: 0.8rem;
-  }
-  .rarity-pip {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    opacity: 0.5;
-  }
-  .rarity-pip.filled { opacity: 1; }
-
-  /* CARD REVEAL OVERLAY */
-  .overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.92);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 2rem;
-    backdrop-filter: blur(8px);
-  }
-  .overlay.active { display: flex; }
-
-  .reveal-container {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 900px;
-    max-height: 80vh;
-    overflow-y: auto;
-    padding: 1rem;
-  }
-
-  .player-card {
-    width: 160px;
-    min-height: 240px;
-    border-radius: 14px;
-    padding: 0;
-    position: relative;
-    cursor: pointer;
-    transform-style: preserve-3d;
-    perspective: 1000px;
-    flex-shrink: 0;
-  }
-  .card-inner {
-    width: 100%; min-height: 240px;
-    position: relative;
-    transform-style: preserve-3d;
-    transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
-  }
-  .player-card.flipped .card-inner { transform: rotateY(180deg); }
-
-  .card-front, .card-back {
-    position: absolute; inset: 0;
-    border-radius: 14px;
-    backface-visibility: hidden;
-    min-height: 240px;
-  }
-  .card-back {
-    background: linear-gradient(135deg, var(--nfl-blue), #001030);
-    border: 2px solid rgba(255,255,255,0.1);
-    display: flex; align-items: center; justify-content: center;
-  }
-  .card-back-logo {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 1.6rem;
-    color: rgba(255,255,255,0.4);
-    letter-spacing: 3px;
-    text-align: center;
-  }
-  .card-back-logo span { color: rgba(213,10,10,0.6); }
-  .card-back-pattern {
-    position: absolute; inset: 0;
-    background-image: repeating-linear-gradient(
-      45deg,
-      rgba(255,255,255,0.02) 0px,
-      rgba(255,255,255,0.02) 1px,
-      transparent 1px,
-      transparent 8px
-    );
-    border-radius: 14px;
-  }
-
-  .card-front {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transform: rotateY(180deg);
-  }
-  .card-header {
-    padding: 0.6rem 0.8rem 0.4rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-  .card-overall {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 2rem;
-    line-height: 1;
-  }
-  .card-pos {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: rgba(0,0,0,0.3);
-    letter-spacing: 1px;
-    margin-top: 4px;
-  }
-  .card-team-badge {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: rgba(255,255,255,0.8);
-    text-align: right;
-  }
-  .card-player-area {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 4rem;
-    padding: 0.5rem 0;
-    position: relative;
-  }
-  .card-glow-effect {
-    position: absolute;
-    inset: 0;
-    opacity: 0.3;
-  }
-  .card-footer {
-    padding: 0.6rem 0.8rem;
-    text-align: center;
-  }
-  .card-name {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    line-height: 1.2;
-  }
-  .card-rarity-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-top: 2px;
-    opacity: 0.8;
-  }
-  .card-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
-    padding: 0 0.8rem 0.6rem;
-  }
-  .card-stat {
-    background: rgba(0,0,0,0.25);
-    border-radius: 4px;
-    padding: 2px 4px;
-    font-size: 0.6rem;
-  }
-  .card-stat-label { opacity: 0.6; text-transform: uppercase; letter-spacing: 0.5px; }
-  .card-stat-val { font-weight: 700; font-size: 0.75rem; }
-
-  /* Card rarity gradients */
-  .rarity-common { background: linear-gradient(160deg, #1e2a3a, #0d1520); border: 1px solid #3a4a5a; }
-  .rarity-uncommon { background: linear-gradient(160deg, #0a2010, #051008); border: 1px solid #2a6030; }
-  .rarity-rare { background: linear-gradient(160deg, #001035, #000820); border: 1px solid #0040a0; }
-  .rarity-epic { background: linear-gradient(160deg, #1a0035, #0d0020); border: 1px solid #6020c0; }
-  .rarity-legendary { background: linear-gradient(160deg, #1a0800, #100500); border: 1px solid #c04000; }
-  .rarity-ultimate {
-    background: linear-gradient(160deg, #1a1000, #0d0800);
-    border: 2px solid var(--gold);
-    box-shadow: 0 0 20px rgba(255,215,0,0.3), inset 0 0 20px rgba(255,215,0,0.05);
-  }
-
-  /* Shimmer animation for legendary+ */
-  .shimmer::after {
-    content: '';
-    position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%);
-    animation: shimmer 2.5s infinite;
-  }
-  @keyframes shimmer { 0% { transform: translateX(-60%) translateY(-60%) rotate(30deg); } 100% { transform: translateX(60%) translateY(60%) rotate(30deg); } }
-
-  .particle {
-    position: fixed;
-    pointer-events: none;
-    z-index: 999;
-    border-radius: 50%;
-    animation: particle-fall 2s ease-out forwards;
-  }
-  @keyframes particle-fall {
-    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(300px) rotate(720deg); opacity: 0; }
-  }
-
-  /* COLLECTION */
-  .collection-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 1rem;
-    max-width: 1100px;
-  }
-  .collection-empty {
-    grid-column: 1/-1;
-    text-align: center;
-    padding: 5rem 2rem;
-    color: var(--muted);
-  }
-  .collection-empty-icon { font-size: 4rem; display: block; margin-bottom: 1rem; }
-
-  /* STATS PANEL */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-    max-width: 800px;
-    margin-bottom: 2rem;
-  }
-  .stat-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.2rem 1.5rem;
-  }
-  .stat-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.3rem; }
-  .stat-value {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 2rem;
-    letter-spacing: 1px;
-    color: var(--gold);
-  }
-
-  /* NOTIFICATION */
-  .notif {
-    position: fixed;
-    bottom: 2rem; right: 2rem;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1rem 1.5rem;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    z-index: 2000;
-    transform: translateY(100px);
-    opacity: 0;
-    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
-    max-width: 300px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-  }
-  .notif.show { transform: translateY(0); opacity: 1; }
-  .notif.gold-notif { border-color: rgba(255,215,0,0.4); color: var(--gold); }
-  .notif.red-notif { border-color: rgba(213,10,10,0.4); color: #ff8080; }
-
-  /* Pulsing gold circle decoration */
-  @keyframes pulse-ring {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255,215,0,0.4); }
-    70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(255,215,0,0); }
-    100% { transform: scale(0.95); }
-  }
-  .pulse-gold { animation: pulse-ring 2s infinite; }
-
-  .cooldown-bar {
-    height: 4px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 0.5rem;
-  }
-  .cooldown-fill {
-    height: 100%;
-    background: var(--nfl-red);
-    transition: width 0.1s linear;
-    border-radius: 2px;
-  }
-  .cooldown-text {
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-top: 0.3rem;
-    text-align: right;
-  }
-
-  .flicker { animation: flicker 0.5s ease; }
-  @keyframes flicker {
-    0%,100% { opacity: 1; }
-    25% { opacity: 0.6; }
-    50% { opacity: 1; }
-    75% { opacity: 0.7; }
-  }
-
-  .pack-reveal-title {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 3rem;
-    letter-spacing: 5px;
-    color: white;
-    text-align: center;
-    text-shadow: 0 0 40px rgba(255,215,0,0.5);
-    animation: slideIn 0.6s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  @keyframes slideIn {
-    from { transform: translateY(-30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  .pack-open-anim {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 1rem; padding: 2rem;
-  }
-  .opening-pack-icon {
-    font-size: 8rem;
-    animation: packShake 0.5s ease-in-out 3;
-    filter: drop-shadow(0 0 30px rgba(255,215,0,0.5));
-  }
-  @keyframes packShake {
-    0%,100% { transform: rotate(-5deg) scale(1); }
-    50% { transform: rotate(5deg) scale(1.1); }
-  }
-
-  .tap-hint {
-    font-size: 0.85rem;
-    color: var(--muted);
-    text-align: center;
-    animation: blink 1.5s infinite;
-  }
-  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
-
-  .badge-new {
-    position: absolute; top: -6px; right: -6px;
-    background: var(--nfl-red);
-    color: white;
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    padding: 2px 6px;
-    border-radius: 50px;
-    animation: badge-bounce 1s infinite alternate;
-  }
-  @keyframes badge-bounce { from { transform: scale(1); } to { transform: scale(1.15); } }
-
-  .wheel-result-toast {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: 'Bebas Neue', cursive;
-    font-size: 1.8rem;
-    letter-spacing: 3px;
-    color: var(--gold);
-    text-shadow: 0 0 20px rgba(255,215,0,0.8);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 10;
-    transition: opacity 0.3s;
-    white-space: nowrap;
-  }
-  .wheel-result-toast.show {
-    opacity: 1;
-    animation: toastPop 1.5s ease forwards;
-  }
-  @keyframes toastPop {
-    0% { opacity: 0; transform: translate(-50%, -30%); }
-    20% { opacity: 1; transform: translate(-50%, -50%); }
-    80% { opacity: 1; transform: translate(-50%, -50%); }
-    100% { opacity: 0; transform: translate(-50%, -70%); }
-  }
-
-  /* Stars burst animation */
-  .burst-star {
-    position: fixed;
-    pointer-events: none;
-    z-index: 1999;
-    font-size: 1.5rem;
-    animation: burstOut 1s ease-out forwards;
-  }
-  @keyframes burstOut {
-    0% { transform: translate(0,0) scale(0); opacity: 1; }
-    100% { transform: translate(var(--tx), var(--ty)) scale(1.5); opacity: 0; }
-  }
+:root{--gold:#FFD700;--gold2:#e8a000;--gold-dark:#B8860B;--red:#D50A0A;--blue:#013369;--bg:#080d1c;--bg2:#0e1628;--bg3:#161f32;--bg4:#1c2840;--text:#e8eaf6;--muted:#6a7a94;--border:rgba(255,255,255,0.07);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px;}
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#010f2a,#020818);border-bottom:3px solid var(--red);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300;box-shadow:0 4px 40px rgba(0,0,0,.8);}
+.logo{font-family:'Bebas Neue',cursive;font-size:1.8rem;letter-spacing:4px;color:#fff;padding:.65rem 0;text-decoration:none;}
+.logo em{color:var(--red);font-style:normal;}
+.coin-hud{display:flex;align-items:center;gap:.5rem;background:rgba(0,0,0,.55);border:1.5px solid var(--gold-dark);border-radius:50px;padding:.4rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:700;color:var(--gold);}
+.coin-orb{width:22px;height:22px;background:radial-gradient(circle at 33% 28%,#ffe55c,#ffd700,#a07000);border-radius:50%;border:2px solid #8b6914;box-shadow:0 0 10px rgba(255,215,0,.5);flex-shrink:0;}
+/* TABS */
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{padding:.8rem 1.4rem;font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:1px;color:var(--muted);cursor:pointer;border:none;background:none;text-transform:uppercase;position:relative;transition:color .2s;white-space:nowrap;}
+.tab::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--red);transform:scaleX(0);transition:transform .2s;}
+.tab.on{color:#fff;}.tab.on::after{transform:scaleX(1);}.tab:hover{color:#fff;}
+/* PANELS */
+.pnl{display:none;padding:1.5rem;max-width:1250px;margin:0 auto;}.pnl.on{display:block;}
+.sec-title{font-family:'Bebas Neue',cursive;font-size:2rem;letter-spacing:3px;margin-bottom:.2rem;}
+.sec-sub{color:var(--muted);font-size:.85rem;margin-bottom:1.5rem;}
+/* GAME GRID */
+.gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.2rem;}
+.gc{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:1.3rem;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;}
+.gc:hover{transform:translateY(-3px);box-shadow:0 14px 45px rgba(0,0,0,.5);}
+.gc.wide{grid-column:1/-1;}
+.gc-title{font-family:'Bebas Neue',cursive;font-size:1.5rem;letter-spacing:2px;margin-bottom:.2rem;}
+.gc-desc{color:var(--muted);font-size:.8rem;margin-bottom:.8rem;line-height:1.5;}
+.gc-cost{display:inline-flex;align-items:center;gap:5px;background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:50px;padding:.25rem .7rem;font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:700;color:var(--gold);margin-bottom:.7rem;}
+/* BUTTONS */
+.btn{font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:1px;padding:.6rem 1.4rem;border-radius:8px;border:none;cursor:pointer;text-transform:uppercase;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.btn:active{transform:scale(0.95)!important;}
+.btn:disabled{opacity:.35;cursor:not-allowed!important;transform:none!important;box-shadow:none!important;}
+.b-red{background:linear-gradient(135deg,#cc0000,#880000);color:#fff;box-shadow:0 3px 16px rgba(180,0,0,.4);}
+.b-red:hover:not(:disabled){box-shadow:0 5px 24px rgba(180,0,0,.65);transform:translateY(-1px);}
+.b-gold{background:linear-gradient(135deg,#ffd700,#d48000);color:#150800;box-shadow:0 3px 16px rgba(255,215,0,.3);}
+.b-gold:hover:not(:disabled){box-shadow:0 5px 24px rgba(255,215,0,.55);transform:translateY(-1px);}
+.b-blue{background:linear-gradient(135deg,#013369,#001530);color:#fff;border:1px solid rgba(255,255,255,.12);}
+.b-blue:hover:not(:disabled){background:linear-gradient(135deg,#024090,#002050);transform:translateY(-1px);}
+.b-outline{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.b-outline:hover{border-color:rgba(255,255,255,.3);color:#fff;}
+.b-purple{background:linear-gradient(135deg,#5500cc,#330080);color:#fff;box-shadow:0 3px 16px rgba(100,0,200,.35);}
+.b-purple:hover:not(:disabled){box-shadow:0 5px 24px rgba(100,0,200,.6);transform:translateY(-1px);}
+.b-green{background:linear-gradient(135deg,#006622,#003311);color:#fff;box-shadow:0 3px 16px rgba(0,120,40,.35);}
+.b-green:hover:not(:disabled){box-shadow:0 5px 24px rgba(0,120,40,.6);transform:translateY(-1px);}
+/* RESULT */
+.rbadge{padding:.4rem 1.1rem;border-radius:50px;font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;opacity:0;transition:opacity .35s;display:inline-flex;align-items:center;gap:6px;margin-top:.5rem;}
+.rbadge.show{opacity:1;}
+.rbadge.win{background:rgba(255,215,0,.1);color:var(--gold);border:1px solid rgba(255,215,0,.3);}
+.rbadge.lose{background:rgba(200,0,0,.1);color:#ff7070;border:1px solid rgba(200,0,0,.3);}
+.rbadge.big{background:rgba(255,120,0,.12);color:#ff9040;border:1px solid rgba(255,120,0,.35);}
+/* COOLDOWN */
+.cdbar{height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-top:.4rem;max-width:220px;}
+.cdfill{height:100%;background:var(--red);transition:width .1s linear;border-radius:2px;}
+.cdtxt{font-size:.72rem;color:var(--muted);margin-top:.2rem;}
+/* WHEEL */
+.whl-wrap{position:relative;width:240px;height:240px;}
+.whl-ptr{position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-top:26px solid var(--red);z-index:10;filter:drop-shadow(0 3px 6px rgba(213,10,10,.8));}
+#wcanvas{border-radius:50%;box-shadow:0 0 0 5px rgba(255,215,0,.18),0 0 0 10px rgba(255,215,0,.07);}
+.whl-toast{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Bebas Neue',cursive;font-size:1.6rem;letter-spacing:3px;color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.9);opacity:0;pointer-events:none;z-index:12;white-space:nowrap;}
+.whl-toast.pop{animation:toastpop 2s ease forwards;}
+@keyframes toastpop{0%{opacity:0;transform:translate(-50%,-30%);}15%{opacity:1;transform:translate(-50%,-50%);}80%{opacity:1;}100%{opacity:0;transform:translate(-50%,-70%);}}
+/* COIN FLIP */
+.flip-coin{width:110px;height:110px;perspective:600px;cursor:pointer;}
+.flip-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:none;}
+.coin-f,.coin-b{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.2rem;backface-visibility:hidden;}
+.coin-f{background:radial-gradient(circle at 33% 30%,#ffe55c,#ffd700,#a07000);border:4px solid #7a5800;box-shadow:0 0 20px rgba(255,215,0,.45);}
+.coin-b{background:radial-gradient(circle at 33% 30%,#d0d0d0,#a0a0a0,#606060);border:4px solid #404040;transform:rotateY(180deg);}
+/* SLOTS */
+.slot-wrap{background:#030610;padding:.8rem;border-radius:12px;border:2px solid rgba(255,215,0,.15);display:flex;gap:6px;}
+.slot-reel{width:64px;height:72px;overflow:hidden;border:1px solid rgba(255,215,0,.18);border-radius:7px;background:#08101e;position:relative;}
+.slot-strip{display:flex;flex-direction:column;transition:transform .1s;}
+.slot-cell{height:72px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;}
+/* DICE */
+.dice-wrap{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+.die{width:70px;height:70px;background:linear-gradient(145deg,#1a2a40,#0d1828);border:2px solid rgba(255,215,0,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;transition:transform .05s;}
+.die.rolling{animation:diceRoll .08s infinite;}
+@keyframes diceRoll{0%{transform:rotate(-5deg) scale(0.95);}50%{transform:rotate(5deg) scale(1.05);}100%{transform:rotate(-3deg) scale(0.97);}}
+/* CARD TABLE */
+.ctable{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;}
+.cface{width:72px;height:100px;border-radius:9px;background:linear-gradient(160deg,var(--blue),#001030);border:2px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:2rem;cursor:pointer;transition:transform .2s,box-shadow .2s;}
+.cface:hover{transform:translateY(-4px);box-shadow:0 8px 20px rgba(0,0,0,.5);}
+.cface.revealed{cursor:default;}
+.cface:hover.revealed{transform:none;}
+/* SCRATCH */
+.scratch-area{position:relative;width:200px;height:120px;border-radius:12px;overflow:hidden;cursor:crosshair;background:#1a1a2e;border:2px solid rgba(255,215,0,.25);}
+.scratch-overlay{position:absolute;inset:0;background:repeating-linear-gradient(45deg,#2a3a50,#2a3a50 4px,#1e2e40 4px,#1e2e40 8px);pointer-events:none;}
+.scratch-prize{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Bebas Neue',cursive;font-size:1.4rem;letter-spacing:2px;}
+.scratch-canvas{position:absolute;inset:0;}
+/* HORSE RACE */
+.track-wrap{background:#030610;border-radius:12px;border:2px solid rgba(255,255,255,.08);overflow:hidden;margin-bottom:.8rem;}
+.track-lane{display:flex;align-items:center;padding:.35rem .8rem;border-bottom:1px solid rgba(255,255,255,.04);position:relative;height:42px;}
+.track-lane:last-child{border-bottom:none;}
+.runner-label{font-family:'Barlow Condensed',sans-serif;font-size:.8rem;font-weight:700;width:70px;flex-shrink:0;color:var(--muted);}
+.track-bar{flex:1;background:rgba(255,255,255,.04);border-radius:3px;height:8px;overflow:hidden;position:relative;}
+.runner-fill{height:100%;border-radius:3px;width:0%;transition:width .15s ease-out;}
+.runner-emoji{position:absolute;right:0;top:50%;transform:translate(50%,-50%);font-size:1.2rem;transition:right .15s ease-out;}
+.finish-line{position:absolute;right:.8rem;top:0;bottom:0;width:2px;background:rgba(255,255,255,.15);}
+/* PLINKO */
+.plinko-wrap{position:relative;width:200px;margin:0 auto;}
+#plinko-canvas{display:block;margin:0 auto;}
+/* PACK STORE */
+.packs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.2rem;}
+.pack-card{border-radius:14px;padding:1.3rem;text-align:center;cursor:pointer;position:relative;overflow:hidden;transition:all .25s;}
+.pack-card:hover{transform:translateY(-5px);}
+.p-bronze{background:linear-gradient(160deg,#1a0e06,#100900);border:1px solid #6b3a10;}
+.p-silver{background:linear-gradient(160deg,#141420,#0b0b16);border:1px solid #607090;}
+.p-gold{background:linear-gradient(160deg,#140e00,#0c0800);border:1px solid #a07800;}
+.p-elite{background:linear-gradient(160deg,#0c0020,#060010);border:1px solid #7000cc;}
+.p-legend{background:linear-gradient(160deg,#140800,#0a0400);border:1px solid #cc3000;}
+.pack-icon{font-size:3.5rem;display:block;margin-bottom:.7rem;}
+.pack-name{font-family:'Bebas Neue',cursive;font-size:1.3rem;letter-spacing:2px;margin-bottom:.2rem;}
+.pack-desc{font-size:.75rem;color:var(--muted);margin-bottom:.6rem;line-height:1.4;}
+.pack-cnt{font-size:.72rem;color:rgba(255,255,255,.35);margin-bottom:.6rem;}
+.pack-price{display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.4);border-radius:50px;padding:.3rem .9rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:var(--gold);}
+.multi-btns{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-top:.6rem;}
+.multi-btn{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.5px;padding:.3rem .7rem;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:var(--muted);cursor:pointer;transition:all .15s;text-transform:uppercase;}
+.multi-btn:hover{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.3);}
+.multi-btn:disabled{opacity:.3;cursor:not-allowed;}
+/* PLAYER CARD */
+.pcard-wrap{width:155px;flex-shrink:0;}
+.pcard{width:155px;min-height:230px;border-radius:13px;position:relative;cursor:pointer;transform-style:preserve-3d;perspective:1000px;}
+.pcard-inner{width:100%;min-height:230px;position:relative;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.4,0,.2,1);}
+.pcard.flipped .pcard-inner{transform:rotateY(180deg);}
+.pcard-back,.pcard-front{position:absolute;inset:0;border-radius:13px;backface-visibility:hidden;min-height:230px;}
+.pcard-back{background:linear-gradient(160deg,#011530,#000818);border:2px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.3rem;}
+.pback-pattern{position:absolute;inset:0;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.025) 0,rgba(255,255,255,.025) 1px,transparent 1px,transparent 7px);border-radius:13px;}
+.pback-logo{font-family:'Bebas Neue',cursive;font-size:1.4rem;letter-spacing:3px;color:rgba(255,255,255,.35);text-align:center;position:relative;z-index:1;}
+.pback-logo em{color:rgba(213,10,10,.5);font-style:normal;}
+.pcard-front{transform:rotateY(180deg);display:flex;flex-direction:column;overflow:hidden;}
+/* Card header */
+.cf-hdr{padding:.5rem .7rem .3rem;display:flex;justify-content:space-between;align-items:flex-start;}
+.cf-ovr{font-family:'Bebas Neue',cursive;font-size:2rem;line-height:1;}
+.cf-pos{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;padding:2px 5px;border-radius:4px;background:rgba(0,0,0,.3);letter-spacing:1px;margin-top:3px;display:inline-block;}
+.cf-team{font-size:.6rem;font-weight:700;color:rgba(255,255,255,.7);text-align:right;}
+/* Player photo area */
+.cf-photo{width:100%;height:105px;overflow:hidden;position:relative;background:rgba(0,0,0,.3);}
+.cf-photo img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block;}
+.cf-photo-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3.5rem;}
+.cf-photo-gradient{position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,rgba(0,0,0,.6));}
+/* Stats row */
+.cf-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:.3rem .5rem;}
+.cf-stat{background:rgba(0,0,0,.25);border-radius:3px;padding:2px 3px;text-align:center;}
+.cf-stat-lbl{font-size:.5rem;opacity:.6;text-transform:uppercase;letter-spacing:.3px;}
+.cf-stat-val{font-size:.7rem;font-weight:700;}
+/* Card footer */
+.cf-footer{padding:.3rem .7rem .5rem;text-align:center;}
+.cf-name{font-family:'Barlow Condensed',sans-serif;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;line-height:1.2;}
+.cf-rarity{font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;opacity:.85;}
+/* Shimmer */
+.shimmer{position:relative;overflow:hidden;}
+.shimmer::after{content:'';position:absolute;top:-100%;left:-100%;width:300%;height:300%;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.07) 50%,transparent 65%);animation:shimmer 2.5s infinite;}
+@keyframes shimmer{0%{transform:translateX(-50%) translateY(-50%);}100%{transform:translateX(0%) translateY(0%);}}
+/* Legendary glow pulse */
+@keyframes legendglow{0%,100%{box-shadow:0 0 18px rgba(255,90,20,.4),inset 0 0 12px rgba(255,90,20,.08);}50%{box-shadow:0 0 35px rgba(255,90,20,.7),inset 0 0 20px rgba(255,90,20,.15);}}
+.card-legend{animation:legendglow 2s infinite;}
+@keyframes ultimateglow{0%,100%{box-shadow:0 0 22px rgba(255,215,0,.5),inset 0 0 15px rgba(255,215,0,.1);}50%{box-shadow:0 0 45px rgba(255,215,0,.9),inset 0 0 28px rgba(255,215,0,.2);}}
+.card-ultimate{animation:ultimateglow 1.8s infinite;}
+/* Reveal overlay */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:1.5rem;backdrop-filter:blur(10px);}
+.overlay.on{display:flex;}
+.rev-title{font-family:'Bebas Neue',cursive;font-size:2.4rem;letter-spacing:5px;color:#fff;text-align:center;text-shadow:0 0 40px rgba(255,215,0,.45);}
+.rev-cards{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;max-width:950px;max-height:75vh;overflow-y:auto;padding:1rem;}
+.rev-btns{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;}
+/* Opening anim */
+.open-anim{display:flex;flex-direction:column;align-items:center;gap:1rem;padding:2rem;}
+.open-icon{font-size:7rem;filter:drop-shadow(0 0 30px rgba(255,215,0,.5));}
+.open-shake{animation:packshake .45s ease-in-out 3;}
+@keyframes packshake{0%,100%{transform:rotate(-6deg) scale(1);}50%{transform:rotate(6deg) scale(1.1);}}
+.tap-hint{font-size:.82rem;color:var(--muted);animation:blink 1.4s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+/* COLLECTION */
+.col-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:1rem;}
+.col-empty{grid-column:1/-1;text-align:center;padding:4rem 2rem;color:var(--muted);}
+/* STATS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.stat-c{background:var(--bg3);border:1px solid var(--border);border-radius:11px;padding:1rem 1.2rem;}
+.stat-lbl{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:.25rem;}
+.stat-val{font-family:'Bebas Neue',cursive;font-size:1.9rem;letter-spacing:1px;color:var(--gold);}
+/* Notif */
+.notif{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bg4);border:1px solid var(--border);border-radius:11px;padding:.9rem 1.3rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:600;z-index:1000;transform:translateY(80px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);max-width:280px;display:flex;align-items:center;gap:9px;box-shadow:0 10px 40px rgba(0,0,0,.6);}
+.notif.show{transform:translateY(0);opacity:1;}
+.notif.ng{border-color:rgba(255,215,0,.35);color:var(--gold);}
+.notif.nr{border-color:rgba(200,0,0,.35);color:#ff8080;}
+/* Burst */
+.burst{position:fixed;pointer-events:none;z-index:999;font-size:1.3rem;animation:burstout 1.2s ease-out forwards;}
+@keyframes burstout{0%{transform:translate(0,0) scale(0);opacity:1;}100%{transform:translate(var(--tx),var(--ty)) scale(1.4);opacity:0;}}
+/* Coin count flicker */
+@keyframes flicker{0%,100%{opacity:1;}30%{opacity:.5;}60%{opacity:.9;}}
+.flk{animation:flicker .5s ease;}
+/* Rarity pip */
+.pip-row{display:flex;gap:3px;justify-content:center;margin-top:.5rem;}
+.pip{width:7px;height:7px;border-radius:50%;background:#222;}
+/* Pack multi badge */
+.multi-badge{position:absolute;top:.6rem;right:.6rem;background:var(--red);color:#fff;font-size:.6rem;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:50px;}
+/* Horse bet select */
+select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:.4rem .7rem;font-family:'Barlow Condensed',sans-serif;font-size:.95rem;}
+/* Plinko bucket */
+.plinko-buckets{display:flex;gap:2px;justify-content:center;margin-top:.3rem;}
+.p-bucket{flex:1;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;padding:.2rem 0;border-radius:4px;max-width:36px;}
+/* Spin glow */
+@keyframes pulsegold{0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,.4);}50%{box-shadow:0 0 0 10px rgba(255,215,0,0);}}
+.pgold{animation:pulsegold 2s infinite;}
+/* 99 badge */
+.badge-99{background:linear-gradient(135deg,#ffd700,#e8a000);color:#000;font-size:.55rem;font-weight:900;padding:1px 5px;border-radius:3px;letter-spacing:.5px;vertical-align:middle;margin-left:3px;}
+/* Tape color bands on cards */
+.tape-common{background:rgba(120,160,200,.15);}
+.tape-uncommon{background:rgba(50,200,100,.15);}
+.tape-rare{background:rgba(40,100,255,.2);}
+.tape-epic{background:rgba(140,40,255,.2);}
+.tape-legendary{background:rgba(255,80,20,.2);}
+.tape-ultimate{background:rgba(255,215,0,.2);}
+/* Photo error fallback handled in JS */
+img.photo{image-rendering:auto;}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="logo">NFL<span>DRAFT</span> PRO</div>
-  <div class="coins-display">
-    <div class="coin-icon">🪙</div>
-    <span id="coin-count">500</span>
-  </div>
+<div class="hdr">
+  <div class="logo">NFL<em>DRAFT</em>PRO</div>
+  <div class="coin-hud"><div class="coin-orb"></div><span id="coin-count">750</span></div>
 </div>
 
-<div class="nav-tabs">
-  <button class="nav-tab active" onclick="switchTab('games')">🎰 Luck Games</button>
-  <button class="nav-tab" onclick="switchTab('store')">🏪 Pack Store</button>
-  <button class="nav-tab" onclick="switchTab('collection')">📋 My Collection</button>
-  <button class="nav-tab" onclick="switchTab('stats')">📊 Stats</button>
+<div class="tabs">
+  <button class="tab on" onclick="goTab('games',this)">🎰 Luck Games</button>
+  <button class="tab" onclick="goTab('store',this)">🏪 Pack Store</button>
+  <button class="tab" onclick="goTab('col',this)">📋 Collection</button>
+  <button class="tab" onclick="goTab('stats',this)">📊 Stats</button>
 </div>
 
-<!-- LUCK GAMES -->
-<div id="tab-games" class="panel active">
-  <div class="section-title">Luck Games</div>
-  <div class="section-sub">Play to earn coins — then open packs with your winnings!</div>
-  
-  <div class="games-grid">
-    <!-- SPIN WHEEL -->
-    <div class="game-card" style="grid-column: 1 / -1;">
-      <div style="display:flex; align-items:flex-start; gap:2rem; flex-wrap:wrap;">
-        <div class="wheel-container">
-          <div class="wheel-wrapper">
-            <div class="wheel-pointer"></div>
-            <canvas id="wheel-canvas" width="300" height="300"></canvas>
-            <div class="wheel-result-toast" id="wheel-toast"></div>
+<!-- ═══ LUCK GAMES ═══ -->
+<div id="pnl-games" class="pnl on">
+  <div class="sec-title">Luck Games</div>
+  <div class="sec-sub">Win coins to spend on packs. Some games cost coins to enter — high risk, high reward!</div>
+  <div class="gg">
+
+    <!-- 1. FORTUNE WHEEL (free with cooldown) -->
+    <div class="gc wide">
+      <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:flex-start;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+          <div class="whl-wrap">
+            <div class="whl-ptr"></div>
+            <canvas id="wcanvas" width="240" height="240"></canvas>
+            <div class="whl-toast" id="wtoa"></div>
           </div>
-          <div id="wheel-result-badge" class="result-badge"></div>
+          <div id="w-rbadge" class="rbadge"></div>
         </div>
-        <div style="flex:1; min-width:220px;">
-          <div class="game-card-title">💫 Fortune Wheel</div>
-          <div class="game-card-desc">Spin the wheel — land on high multipliers to earn big coins. One free spin every 30 seconds!</div>
-          <div style="margin-bottom:1rem;">
-            <div style="font-size:0.8rem; color:var(--muted); margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:1px;">Wheel Segments</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.8rem;">
-              <div style="color:#888">💀 Bankrupt — 0</div>
-              <div style="color:#cd7f32">+50 coins</div>
-              <div style="color:#cd7f32">+100 coins</div>
-              <div style="color:#c0c0c0">+150 coins</div>
-              <div style="color:#c0c0c0">+200 coins</div>
-              <div style="color:var(--gold)">+300 coins</div>
-              <div style="color:var(--gold)">+500 coins</div>
-              <div style="color:#ff4500">🔥 JACKPOT 1000!</div>
-            </div>
+        <div style="flex:1;min-width:220px;">
+          <div class="gc-title">🎡 Fortune Wheel</div>
+          <div class="gc-cost">FREE — 30s cooldown</div>
+          <div class="gc-desc">Spin for coins! Land on the jackpot for 1,000 coins. But beware — Bankrupt wipes your spin streak!</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:.78rem;margin-bottom:1rem;">
+            <span style="color:#555">💀 BANKRUPT — 0</span>
+            <span style="color:#cd7f32">🪙 +75</span>
+            <span style="color:#cd7f32">🪙 +125</span>
+            <span style="color:#aaa">🪙 +175</span>
+            <span style="color:#aaa">🪙 +250</span>
+            <span style="color:var(--gold)">⭐ +400</span>
+            <span style="color:var(--gold)">💫 +600</span>
+            <span style="color:#ff4500">🔥 JACKPOT 1,000!</span>
           </div>
-          <button class="btn btn-gold pulse-gold" id="spin-btn" onclick="spinWheel()">
-            <span>🎯</span> SPIN!
-          </button>
-          <div class="cooldown-bar" style="max-width:200px; margin-top:0.8rem;">
-            <div class="cooldown-fill" id="spin-cooldown-bar" style="width:0%"></div>
-          </div>
-          <div class="cooldown-text" id="spin-cooldown-text"></div>
+          <button class="btn b-gold pgold" id="spin-btn" onclick="doSpin()">🎯 SPIN!</button>
+          <div class="cdbar"><div class="cdfill" id="spin-cd" style="width:0%"></div></div>
+          <div class="cdtxt" id="spin-cdt"></div>
         </div>
       </div>
     </div>
 
-    <!-- COIN FLIP -->
-    <div class="game-card">
-      <div class="game-card-title">🪙 Coin Flip</div>
-      <div class="game-card-desc">Double or nothing! Bet coins on heads or tails. Win and double your bet — lose it all!</div>
-      <div class="coin-flip-area">
-        <div class="flip-coin" id="flip-coin" onclick="doFlip()">
-          <div class="flip-coin-inner" id="coin-inner">
-            <div class="coin-face">🏈</div>
-            <div class="coin-back">🦅</div>
+    <!-- 2. COIN FLIP -->
+    <div class="gc">
+      <div class="gc-title">🪙 Coin Flip</div>
+      <div class="gc-cost">25 – 500 🪙 entry</div>
+      <div class="gc-desc">Double or nothing. Heads (football) or Tails (eagle). Win = 2× your bet. Lose = gone.</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+        <div class="flip-coin" onclick="doFlip()">
+          <div class="flip-inner" id="flipinner">
+            <div class="coin-f">🏈</div>
+            <div class="coin-b">🦅</div>
           </div>
         </div>
-        <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; justify-content:center;">
-          <div style="font-size:0.85rem; color:var(--muted);">Bet:</div>
-          <select id="flip-bet" style="background:var(--bg2); border:1px solid var(--border); color:white; border-radius:6px; padding:0.4rem 0.8rem; font-family:'Barlow Condensed',sans-serif; font-size:1rem;">
-            <option value="25">25 🪙</option>
-            <option value="50">50 🪙</option>
-            <option value="100" selected>100 🪙</option>
-            <option value="200">200 🪙</option>
-          </select>
-          <select id="flip-choice" style="background:var(--bg2); border:1px solid var(--border); color:white; border-radius:6px; padding:0.4rem 0.8rem; font-family:'Barlow Condensed',sans-serif; font-size:1rem;">
-            <option value="heads">🏈 Heads</option>
-            <option value="tails">🦅 Tails</option>
-          </select>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;">
+          <select id="flip-bet"><option value="25">25🪙</option><option value="50">50🪙</option><option value="100" selected>100🪙</option><option value="200">200🪙</option><option value="500">500🪙</option></select>
+          <select id="flip-pick"><option value="heads">🏈 Heads</option><option value="tails">🦅 Tails</option></select>
         </div>
-        <button class="btn btn-primary" onclick="doFlip()">FLIP IT!</button>
-        <div id="flip-result" class="result-badge"></div>
+        <button class="btn b-red" onclick="doFlip()">FLIP IT</button>
+        <div id="flip-rbadge" class="rbadge"></div>
       </div>
     </div>
 
-    <!-- DRAFT PICK -->
-    <div class="game-card">
-      <div class="game-card-title">🎲 Mystery Pick</div>
-      <div class="game-card-desc">3 cards face-down — one has a big coin prize! Pick wisely and hope for the best.</div>
-      <div id="mystery-area" style="display:flex; flex-direction:column; align-items:center; gap:1.2rem;">
-        <div style="display:flex; gap:1rem;" id="mystery-cards">
-          <div class="mystery-card" id="mc-0" onclick="pickMystery(0)" style="width:80px;height:110px;background:linear-gradient(160deg,var(--nfl-blue),#001030);border:2px solid rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:2.5rem;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform=''">🏈</div>
-          <div class="mystery-card" id="mc-1" onclick="pickMystery(1)" style="width:80px;height:110px;background:linear-gradient(160deg,var(--nfl-blue),#001030);border:2px solid rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:2.5rem;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform=''">🏈</div>
-          <div class="mystery-card" id="mc-2" onclick="pickMystery(2)" style="width:80px;height:110px;background:linear-gradient(160deg,var(--nfl-blue),#001030);border:2px solid rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:2.5rem;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform=''">🏈</div>
+    <!-- 3. SLOT MACHINE -->
+    <div class="gc">
+      <div class="gc-title">🎰 Slot Machine</div>
+      <div class="gc-cost">75 🪙 per pull</div>
+      <div class="gc-desc">Match 3 symbols for huge payouts! Three 7s = 5,000 coins. Three skulls = lose 200 extra!</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+        <div class="slot-wrap" id="slot-wrap">
+          <div class="slot-reel"><div class="slot-strip" id="sr0"></div></div>
+          <div class="slot-reel"><div class="slot-strip" id="sr1"></div></div>
+          <div class="slot-reel"><div class="slot-strip" id="sr2"></div></div>
         </div>
-        <div id="mystery-result" class="result-badge"></div>
-        <button class="btn btn-outline" id="mystery-reset-btn" onclick="resetMystery()" style="display:none">↩ Play Again (Free!)</button>
+        <div style="font-size:.72rem;color:var(--muted);text-align:center;">777=5000🪙 &nbsp;🏆🏆🏆=1500🪙 &nbsp;🏈🏈🏈=800🪙 &nbsp;Match 2=200🪙 &nbsp;💀💀💀=lose 200!</div>
+        <button class="btn b-red" id="slot-btn" onclick="doSlots()">🎰 PULL (75🪙)</button>
+        <div id="slot-rbadge" class="rbadge"></div>
       </div>
     </div>
-  </div>
+
+    <!-- 4. MYSTERY PICK -->
+    <div class="gc">
+      <div class="gc-title">🎴 Mystery Pick</div>
+      <div class="gc-cost">FREE</div>
+      <div class="gc-desc">3 face-down cards. One has a big prize. One has a trap. Pick wisely — you only get one shot!</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+        <div class="ctable" id="mystery-cards"></div>
+        <div id="myst-rbadge" class="rbadge"></div>
+        <button class="btn b-outline" id="myst-reset" onclick="resetMystery()" style="display:none">↩ Play Again</button>
+      </div>
+    </div>
+
+    <!-- 5. DICE DUEL -->
+    <div class="gc">
+      <div class="gc-title">🎲 Dice Duel</div>
+      <div class="gc-cost">50 🪙 to play</div>
+      <div class="gc-desc">Roll 2 dice against the house. Beat 7 = win 150🪙. Exact 7 = win 300🪙. Under 7 = lose your bet. Snake eyes = lose 200!</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+        <div class="dice-wrap">
+          <div class="die" id="d1">🎲</div>
+          <div style="font-family:'Bebas Neue',cursive;font-size:1.5rem;color:var(--muted)">VS</div>
+          <div class="die" id="d2">🎲</div>
+        </div>
+        <div style="text-align:center;font-size:.82rem;color:var(--muted);" id="dice-sum">Roll the dice!</div>
+        <button class="btn b-purple" id="dice-btn" onclick="doDice()">🎲 ROLL (50🪙)</button>
+        <div id="dice-rbadge" class="rbadge"></div>
+      </div>
+    </div>
+
+    <!-- 6. SCRATCH CARD -->
+    <div class="gc">
+      <div class="gc-title">🎟️ Scratch Card</div>
+      <div class="gc-cost">40 🪙 per card</div>
+      <div class="gc-desc">Buy a scratch card and reveal your prize. Could be nothing... could be 1,000 coins. Scratch to find out!</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+        <div style="position:relative;">
+          <div class="scratch-area" id="scratch-area">
+            <div class="scratch-prize" id="scratch-prize" style="opacity:0;"></div>
+            <canvas class="scratch-canvas" id="scratch-canvas" width="200" height="120"></canvas>
+          </div>
+        </div>
+        <button class="btn b-blue" id="scratch-btn" onclick="buyScratch()">🎟️ BUY CARD (40🪙)</button>
+        <div id="scratch-rbadge" class="rbadge"></div>
+      </div>
+    </div>
+
+    <!-- 7. HORSE RACE -->
+    <div class="gc">
+      <div class="gc-title">🐎 Horse Race</div>
+      <div class="gc-cost">100 🪙 entry</div>
+      <div class="gc-desc">Pick your horse and watch the race! Win = 350🪙. Your horse has a 1 in 4 shot — don't choke!</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:.8rem;width:100%;">
+        <div class="track-wrap" id="horse-track" style="width:100%;">
+          <div class="track-lane"><span class="runner-label">⚡ Lightning</span><div class="track-bar"><div class="runner-fill" id="rf0" style="background:#e63030;"></div></div></div>
+          <div class="track-lane"><span class="runner-label">🌊 Tidal</span><div class="track-bar"><div class="runner-fill" id="rf1" style="background:#3060e6;"></div></div></div>
+          <div class="track-lane"><span class="runner-label">💨 Gust</span><div class="track-bar"><div class="runner-fill" id="rf2" style="background:#30c060;"></div></div></div>
+          <div class="track-lane"><span class="runner-label">🔥 Inferno</span><div class="track-bar"><div class="runner-fill" id="rf3" style="background:#e69030;"></div></div></div>
+        </div>
+        <div style="display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;justify-content:center;">
+          <select id="horse-pick"><option value="0">⚡ Lightning</option><option value="1">🌊 Tidal</option><option value="2">💨 Gust</option><option value="3">🔥 Inferno</option></select>
+          <button class="btn b-green" id="horse-btn" onclick="doHorse()">🐎 RACE (100🪙)</button>
+        </div>
+        <div id="horse-rbadge" class="rbadge"></div>
+      </div>
+    </div>
+
+    <!-- 8. HIGH-LOW CARD -->
+    <div class="gc">
+      <div class="gc-title">📊 High-Low</div>
+      <div class="gc-cost">60 🪙 to play</div>
+      <div class="gc-desc">A card is revealed (2-14). Guess if the next card is HIGHER or LOWER. Correct streak = multiplied winnings!</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+        <div style="display:flex;gap:1rem;align-items:center;">
+          <div id="hl-card" style="width:70px;height:100px;border-radius:9px;background:var(--bg4);border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;">
+            <span style="font-size:1.8rem;" id="hl-emoji">🃏</span>
+            <span style="font-family:'Bebas Neue',cursive;font-size:1.4rem;color:var(--gold);" id="hl-val">?</span>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem;">STREAK <span id="hl-streak" style="color:var(--gold);font-weight:700;">0</span></div>
+            <div style="font-size:.75rem;color:var(--muted);">Next card is...</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:.6rem;">
+          <button class="btn b-green" id="hl-high" onclick="doHL('high')" disabled>⬆ Higher</button>
+          <button class="btn b-red" id="hl-low" onclick="doHL('low')" disabled>⬇ Lower</button>
+        </div>
+        <button class="btn b-blue" id="hl-start" onclick="startHL()">▶ START GAME (60🪙)</button>
+        <div id="hl-rbadge" class="rbadge"></div>
+      </div>
+    </div>
+
+  </div><!-- end .gg -->
 </div>
 
-<!-- PACK STORE -->
-<div id="tab-store" class="panel">
-  <div class="section-title">Pack Store</div>
-  <div class="section-sub">Spend your coins on packs — better packs, better players!</div>
-  <div class="packs-grid">
-    <!-- packs generated by JS -->
-  </div>
+<!-- ═══ PACK STORE ═══ -->
+<div id="pnl-store" class="pnl">
+  <div class="sec-title">Pack Store</div>
+  <div class="sec-sub">Open packs to collect NFL players. Better packs = better pull rates!</div>
+  <div class="packs-grid" id="store-grid"></div>
 </div>
 
-<!-- COLLECTION -->
-<div id="tab-collection" class="panel">
-  <div class="section-title">My Collection</div>
-  <div class="section-sub">All the players you've pulled from packs.</div>
-  <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1.5rem;">
-    <select id="col-filter" onchange="renderCollection()" style="background:var(--bg3); border:1px solid var(--border); color:white; border-radius:6px; padding:0.4rem 0.8rem; font-family:'Barlow Condensed',sans-serif; font-size:1rem;">
-      <option value="all">All Rarities</option>
-      <option value="common">Common</option>
-      <option value="uncommon">Uncommon</option>
-      <option value="rare">Rare</option>
-      <option value="epic">Epic</option>
-      <option value="legendary">Legendary</option>
-      <option value="ultimate">Ultimate</option>
-    </select>
-    <select id="col-sort" onchange="renderCollection()" style="background:var(--bg3); border:1px solid var(--border); color:white; border-radius:6px; padding:0.4rem 0.8rem; font-family:'Barlow Condensed',sans-serif; font-size:1rem;">
-      <option value="recent">Most Recent</option>
-      <option value="overall">Overall (High→Low)</option>
-      <option value="rarity">Rarity (Best First)</option>
-    </select>
-    <div style="margin-left:auto; font-family:'Barlow Condensed',sans-serif; font-size:1rem; color:var(--muted); align-self:center;" id="col-count"></div>
+<!-- ═══ COLLECTION ═══ -->
+<div id="pnl-col" class="pnl">
+  <div class="sec-title">My Collection</div>
+  <div class="sec-sub">Every card you've pulled, sorted and filtered.</div>
+  <div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-bottom:1.2rem;align-items:center;">
+    <select id="col-filter" onchange="renderCol()"><option value="all">All Rarities</option><option value="common">Common</option><option value="uncommon">Uncommon</option><option value="rare">Rare</option><option value="epic">Epic</option><option value="legendary">Legendary</option><option value="ultimate">Ultimate</option></select>
+    <select id="col-sort" onchange="renderCol()"><option value="recent">Most Recent</option><option value="ovr">Overall ↓</option><option value="rar">Rarity ↓</option></select>
+    <span style="margin-left:auto;font-size:.82rem;color:var(--muted);" id="col-count"></span>
   </div>
-  <div class="collection-grid" id="collection-grid"></div>
+  <div class="col-grid" id="col-grid"></div>
 </div>
 
-<!-- STATS -->
-<div id="tab-stats" class="panel">
-  <div class="section-title">Your Stats</div>
-  <div class="section-sub">Track your luck and collection progress.</div>
-  <div class="stats-grid" id="stats-grid"></div>
-  <div style="font-family:'Bebas Neue',cursive; font-size:1.4rem; letter-spacing:2px; color:var(--muted); margin-bottom:1rem;">Rarity Breakdown</div>
-  <div id="rarity-breakdown" style="max-width:400px; display:flex; flex-direction:column; gap:6px;"></div>
+<!-- ═══ STATS ═══ -->
+<div id="pnl-stats" class="pnl">
+  <div class="sec-title">Your Stats</div>
+  <div class="sec-sub">Track your luck, spending, and collection.</div>
+  <div class="stat-grid" id="stat-grid"></div>
+  <div style="font-family:'Bebas Neue',cursive;font-size:1.3rem;letter-spacing:2px;color:var(--muted);margin-bottom:.8rem;">Rarity Breakdown</div>
+  <div id="rar-breakdown" style="max-width:380px;display:flex;flex-direction:column;gap:6px;"></div>
+  <div style="margin-top:1.5rem;">
+    <button class="btn b-outline btn-sm" onclick="if(confirm('Reset ALL data?')){localStorage.clear();location.reload();}">🗑️ Reset Save</button>
+  </div>
 </div>
 
 <!-- PACK OPENING OVERLAY -->
-<div class="overlay" id="pack-overlay">
-  <div class="pack-open-anim" id="pack-open-anim">
-    <div class="opening-pack-icon" id="opening-icon">📦</div>
-    <div style="font-family:'Bebas Neue',cursive; font-size:2rem; letter-spacing:4px;" id="opening-pack-name">OPENING PACK</div>
-    <div class="tap-hint">Click to open!</div>
+<div class="overlay" id="overlay">
+  <div class="open-anim" id="open-anim">
+    <div class="open-icon open-shake" id="open-icon">📦</div>
+    <div style="font-family:'Bebas Neue',cursive;font-size:1.8rem;letter-spacing:4px;" id="open-name">OPENING...</div>
+    <div class="tap-hint">Click anywhere to open!</div>
   </div>
-  <div id="reveal-section" style="display:none; width:100%; max-width:900px; padding:1rem;">
-    <div class="pack-reveal-title" id="reveal-title">YOUR CARDS</div>
-    <div class="reveal-container" id="reveal-container"></div>
-    <div style="display:flex; gap:1rem; justify-content:center; margin-top:1rem; flex-wrap:wrap;">
-      <button class="btn btn-gold" onclick="flipAllCards()">Reveal All!</button>
-      <button class="btn btn-outline" onclick="closeOverlay()">✕ Close</button>
+  <div id="rev-section" style="display:none;width:100%;max-width:960px;padding:1rem;">
+    <div class="rev-title" id="rev-title">YOUR PULLS</div>
+    <div class="rev-cards" id="rev-cards"></div>
+    <div class="rev-btns">
+      <button class="btn b-gold" onclick="flipAll()">✨ Reveal All</button>
+      <button class="btn b-outline" onclick="closeOverlay()">✕ Close</button>
     </div>
   </div>
 </div>
@@ -944,714 +459,760 @@
 <div class="notif" id="notif"></div>
 
 <script>
-// =====================
-// DATA
-// =====================
-const NFL_PLAYERS = [
+// ══════════════════════════════════
+// PLAYER DATA — real players with photo URLs
+// ══════════════════════════════════
+const PLAYERS = [
   // QBs
-  { name: "Patrick Mahomes", pos: "QB", team: "KC", emoji: "🏈", overall: 99 },
-  { name: "Josh Allen", pos: "QB", team: "BUF", emoji: "🏈", overall: 97 },
-  { name: "Lamar Jackson", pos: "QB", team: "BAL", emoji: "🏈", overall: 96 },
-  { name: "Joe Burrow", pos: "QB", team: "CIN", emoji: "🏈", overall: 95 },
-  { name: "Jalen Hurts", pos: "QB", team: "PHI", emoji: "🏈", overall: 94 },
-  { name: "Trevor Lawrence", pos: "QB", team: "JAX", emoji: "🏈", overall: 87 },
-  { name: "Justin Herbert", pos: "QB", team: "LAC", emoji: "🏈", overall: 91 },
-  { name: "C.J. Stroud", pos: "QB", team: "HOU", emoji: "🏈", overall: 88 },
+  {name:"Patrick Mahomes",pos:"QB",team:"KC",ovr:99,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png"},
+  {name:"Josh Allen",pos:"QB",team:"BUF",ovr:97,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3054211.png"},
+  {name:"Lamar Jackson",pos:"QB",team:"BAL",ovr:97,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3916387.png"},
+  {name:"Joe Burrow",pos:"QB",team:"CIN",ovr:95,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3915511.png"},
+  {name:"Jalen Hurts",pos:"QB",team:"PHI",ovr:94,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4040715.png"},
+  {name:"Justin Herbert",pos:"QB",team:"LAC",ovr:91,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4038941.png"},
+  {name:"C.J. Stroud",pos:"QB",team:"HOU",ovr:88,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4432577.png"},
+  {name:"Dak Prescott",pos:"QB",team:"DAL",ovr:89,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/2577417.png"},
+  {name:"Aaron Rodgers",pos:"QB",team:"NYJ",ovr:87,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/8439.png"},
+  {name:"Trevor Lawrence",pos:"QB",team:"JAX",ovr:87,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4360310.png"},
+  {name:"Tua Tagovailoa",pos:"QB",team:"MIA",ovr:86,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4241479.png"},
+  {name:"Jordan Love",pos:"QB",team:"GB",ovr:85,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4035538.png"},
   // WRs
-  { name: "Tyreek Hill", pos: "WR", team: "MIA", emoji: "⚡", overall: 97 },
-  { name: "Justin Jefferson", pos: "WR", team: "MIN", emoji: "⚡", overall: 96 },
-  { name: "Davante Adams", pos: "WR", team: "LV", emoji: "⚡", overall: 92 },
-  { name: "Stefon Diggs", pos: "WR", team: "HOU", emoji: "⚡", overall: 90 },
-  { name: "A.J. Brown", pos: "WR", team: "PHI", emoji: "⚡", overall: 94 },
-  { name: "CeeDee Lamb", pos: "WR", team: "DAL", emoji: "⚡", overall: 96 },
-  { name: "Cooper Kupp", pos: "WR", team: "LAR", emoji: "⚡", overall: 88 },
-  { name: "Deebo Samuel", pos: "WR", team: "SF", emoji: "⚡", overall: 87 },
+  {name:"Tyreek Hill",pos:"WR",team:"MIA",ovr:98,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3054245.png"},
+  {name:"Justin Jefferson",pos:"WR",team:"MIN",ovr:97,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4241389.png"},
+  {name:"CeeDee Lamb",pos:"WR",team:"DAL",ovr:96,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4241457.png"},
+  {name:"A.J. Brown",pos:"WR",team:"PHI",ovr:94,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4040715.png"},
+  {name:"Davante Adams",pos:"WR",team:"LV",ovr:92,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/2976516.png"},
+  {name:"Stefon Diggs",pos:"WR",team:"HOU",ovr:90,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/2976499.png"},
+  {name:"DK Metcalf",pos:"WR",team:"SEA",ovr:89,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4047365.png"},
+  {name:"Jaylen Waddle",pos:"WR",team:"MIA",ovr:88,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4360236.png"},
+  {name:"Cooper Kupp",pos:"WR",team:"LAR",ovr:88,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3054040.png"},
+  {name:"Deebo Samuel",pos:"WR",team:"SF",ovr:87,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3929630.png"},
+  {name:"Chris Godwin",pos:"WR",team:"TB",ovr:86,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3054252.png"},
+  {name:"Amari Cooper",pos:"WR",team:"CLE",ovr:86,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/2976212.png"},
+  {name:"Garrett Wilson",pos:"WR",team:"NYJ",ovr:86,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4432577.png"},
+  {name:"Amon-Ra St. Brown",pos:"WR",team:"DET",ovr:87,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4360438.png"},
+  {name:"DJ Moore",pos:"WR",team:"CHI",ovr:84,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3929630.png"},
   // RBs
-  { name: "Christian McCaffrey", pos: "RB", team: "SF", emoji: "💨", overall: 98 },
-  { name: "Derrick Henry", pos: "RB", team: "TEN", emoji: "💨", overall: 90 },
-  { name: "Saquon Barkley", pos: "RB", team: "NYG", emoji: "💨", overall: 89 },
-  { name: "Nick Chubb", pos: "RB", team: "CLE", emoji: "💨", overall: 88 },
-  { name: "Tony Pollard", pos: "RB", team: "DAL", emoji: "💨", overall: 84 },
-  { name: "Breece Hall", pos: "RB", team: "NYJ", emoji: "💨", overall: 85 },
+  {name:"Christian McCaffrey",pos:"RB",team:"SF",ovr:99,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3054211.png"},
+  {name:"Derrick Henry",pos:"RB",team:"BAL",ovr:92,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3054245.png"},
+  {name:"Saquon Barkley",pos:"RB",team:"PHI",ovr:91,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3929630.png"},
+  {name:"Jonathan Taylor",pos:"RB",team:"IND",ovr:89,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4241389.png"},
+  {name:"Nick Chubb",pos:"RB",team:"CLE",ovr:88,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3116385.png"},
+  {name:"Breece Hall",pos:"RB",team:"NYJ",ovr:87,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4432773.png"},
+  {name:"Tony Pollard",pos:"RB",team:"TEN",ovr:85,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4047365.png"},
+  {name:"Josh Jacobs",pos:"RB",team:"GB",ovr:84,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4047365.png"},
+  {name:"Isiah Pacheco",pos:"RB",team:"KC",ovr:82,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4432577.png"},
   // TEs
-  { name: "Travis Kelce", pos: "TE", team: "KC", emoji: "🎯", overall: 97 },
-  { name: "Mark Andrews", pos: "TE", team: "BAL", emoji: "🎯", overall: 92 },
-  { name: "Darren Waller", pos: "TE", team: "NYG", emoji: "🎯", overall: 85 },
-  { name: "Sam LaPorta", pos: "TE", team: "DET", emoji: "🎯", overall: 82 },
+  {name:"Travis Kelce",pos:"TE",team:"KC",ovr:97,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/2576434.png"},
+  {name:"Mark Andrews",pos:"TE",team:"BAL",ovr:92,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3054252.png"},
+  {name:"George Kittle",pos:"TE",team:"SF",ovr:93,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3054040.png"},
+  {name:"Sam LaPorta",pos:"TE",team:"DET",ovr:83,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4432577.png"},
+  {name:"Dallas Goedert",pos:"TE",team:"PHI",ovr:88,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3929630.png"},
+  {name:"Darren Waller",pos:"TE",team:"NYG",ovr:85,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/2576434.png"},
   // Defense
-  { name: "Micah Parsons", pos: "LB", team: "DAL", emoji: "🔱", overall: 98 },
-  { name: "Myles Garrett", pos: "DE", team: "CLE", emoji: "🔱", overall: 97 },
-  { name: "TJ Watt", pos: "LB", team: "PIT", emoji: "🔱", overall: 96 },
-  { name: "Nick Bosa", pos: "DE", team: "SF", emoji: "🔱", overall: 95 },
-  { name: "Sauce Gardner", pos: "CB", team: "NYJ", emoji: "🔱", overall: 94 },
-  { name: "Jalen Ramsey", pos: "CB", team: "LAR", emoji: "🔱", overall: 91 },
-  { name: "Justin Simmons", pos: "S", team: "DEN", emoji: "🔱", overall: 87 },
-  { name: "Devin White", pos: "LB", team: "TB", emoji: "🔱", overall: 83 },
-  // More
-  { name: "Jaylen Waddle", pos: "WR", team: "MIA", emoji: "⚡", overall: 88 },
-  { name: "DK Metcalf", pos: "WR", team: "SEA", emoji: "⚡", overall: 89 },
-  { name: "George Kittle", pos: "TE", team: "SF", emoji: "🎯", overall: 93 },
-  { name: "Jonathan Taylor", pos: "RB", team: "IND", emoji: "💨", overall: 88 },
-  { name: "Josh Jacobs", pos: "RB", team: "LV", emoji: "💨", overall: 83 },
-  { name: "Dak Prescott", pos: "QB", team: "DAL", emoji: "🏈", overall: 89 },
-  { name: "Aaron Rodgers", pos: "QB", team: "NYJ", emoji: "🏈", overall: 88 },
-  { name: "Joe Mixon", pos: "RB", team: "CIN", emoji: "💨", overall: 84 },
-  { name: "Chris Godwin", pos: "WR", team: "TB", emoji: "⚡", overall: 86 },
-  { name: "Khalil Mack", pos: "LB", team: "LAC", emoji: "🔱", overall: 90 },
-  { name: "Darius Slay", pos: "CB", team: "PHI", emoji: "🔱", overall: 86 },
-  { name: "Jessie Bates", pos: "S", team: "ATL", emoji: "🔱", overall: 84 },
-  { name: "Aaron Donald", pos: "DT", team: "LAR", emoji: "🔱", overall: 99 },
-  { name: "Tyrann Mathieu", pos: "S", team: "NO", emoji: "🔱", overall: 83 },
+  {name:"Micah Parsons",pos:"LB",team:"DAL",ovr:99,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4360310.png"},
+  {name:"Aaron Donald",pos:"DT",team:"FA",ovr:99,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/16737.png"},
+  {name:"Myles Garrett",pos:"DE",team:"CLE",ovr:98,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3054211.png"},
+  {name:"TJ Watt",pos:"LB",team:"PIT",ovr:97,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3054245.png"},
+  {name:"Nick Bosa",pos:"DE",team:"SF",ovr:96,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4047365.png"},
+  {name:"Sauce Gardner",pos:"CB",team:"NYJ",ovr:94,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4432577.png"},
+  {name:"Jalen Ramsey",pos:"CB",team:"MIA",ovr:91,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3054252.png"},
+  {name:"Khalil Mack",pos:"LB",team:"LAC",ovr:90,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/2576434.png"},
+  {name:"Justin Simmons",pos:"S",team:"DEN",ovr:87,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3054040.png"},
+  {name:"Darius Slay",pos:"CB",team:"PHI",ovr:86,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/2976499.png"},
+  {name:"Devin White",pos:"LB",team:"TB",ovr:83,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4241389.png"},
+  {name:"Jessie Bates",pos:"S",team:"ATL",ovr:84,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3929630.png"},
+  {name:"Fred Warner",pos:"LB",team:"SF",ovr:91,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/3116385.png"},
+  {name:"Quinnen Williams",pos:"DT",team:"NYJ",ovr:90,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4047365.png"},
+  {name:"Rashan Gary",pos:"LB",team:"GB",ovr:86,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4241479.png"},
+  {name:"Patrick Surtain II",pos:"CB",team:"DEN",ovr:93,photo:"https://a.espncdn.com/i/headshots/nfl/players/full/4360236.png"},
 ];
 
+// ══════════════════════════════════
+// RARITIES & PACKS
+// ══════════════════════════════════
 const RARITIES = {
-  common: { label: "COMMON", color: "#7aa0c0", minOvr: 70, maxOvr: 84, chance: 50 },
-  uncommon: { label: "UNCOMMON", color: "#50c878", minOvr: 82, maxOvr: 88, chance: 25 },
-  rare: { label: "RARE", color: "#4080ff", minOvr: 85, maxOvr: 91, chance: 15 },
-  epic: { label: "EPIC", color: "#a060ff", minOvr: 88, maxOvr: 94, chance: 7 },
-  legendary: { label: "LEGENDARY", color: "#ff6030", minOvr: 92, maxOvr: 98, chance: 2.5 },
-  ultimate: { label: "ULTIMATE", color: "#FFD700", minOvr: 95, maxOvr: 99, chance: 0.5 },
+  common:   {label:"COMMON",   col:"#7aaccc", minO:70, maxO:84},
+  uncommon: {label:"UNCOMMON", col:"#50d878", minO:82, maxO:88},
+  rare:     {label:"RARE",     col:"#4488ff", minO:85, maxO:91},
+  epic:     {label:"EPIC",     col:"#aa55ff", minO:88, maxO:95},
+  legendary:{label:"LEGENDARY",col:"#ff7030", minO:93, maxO:98},
+  ultimate: {label:"ULTIMATE", col:"#FFD700", minO:97, maxO:99},
 };
+const RAR_ORDER = ["ultimate","legendary","epic","rare","uncommon","common"];
 
 const PACKS = [
-  { id: "bronze", name: "Rookie Pack", desc: "Your first step. Common & Uncommon players, a chance at Rare.", icon: "📦", cost: 150, color: "bronze", cards: 3, rarityWeights: { common:70, uncommon:25, rare:5, epic:0, legendary:0, ultimate:0 }, rarity: 1 },
-  { id: "silver", name: "Silver Pack", desc: "Better odds — Uncommon guaranteed, Rare likely.", icon: "🥈", cost: 300, color: "silver", cards: 4, rarityWeights: { common:40, uncommon:40, rare:16, epic:3.5, legendary:0.5, ultimate:0 }, rarity: 2 },
-  { id: "gold", name: "Gold Pack", desc: "Guaranteed Rare+ with real Epic and Legendary chances.", icon: "🥇", cost: 600, color: "gold", cards: 5, rarityWeights: { common:20, uncommon:30, rare:30, epic:14, legendary:5, ultimate:1 }, rarity: 3 },
-  { id: "elite", name: "Elite Draft Pack", desc: "Epic guaranteed! Shot at Legendary and Ultimate tier.", icon: "💎", cost: 1200, color: "elite", cards: 6, rarityWeights: { common:5, uncommon:15, rare:30, epic:30, legendary:15, ultimate:5 }, rarity: 4 },
-  { id: "legendary", name: "Legend Pack", desc: "Pull all-time greats. Legendary guaranteed every pack!", icon: "🔥", cost: 2500, color: "legendary", cards: 7, rarityWeights: { common:0, uncommon:5, rare:15, epic:30, legendary:40, ultimate:10 }, rarity: 5 },
+  {id:"rookie",  name:"Rookie Pack",   icon:"📦", cost:150,  color:"p-bronze",cards:3, multi:[3,10],
+   w:{common:70,uncommon:25,rare:5,epic:0,legendary:0,ultimate:0}, pips:1,
+   desc:"Common & Uncommon players, small Rare chance."},
+  {id:"silver",  name:"Silver Pack",   icon:"🥈", cost:350,  color:"p-silver",cards:4, multi:[3,10],
+   w:{common:40,uncommon:38,rare:18,epic:3.5,legendary:.5,ultimate:0}, pips:2,
+   desc:"Guaranteed Rare likely, small Epic chance."},
+  {id:"gold",    name:"Gold Pack",     icon:"🥇", cost:700,  color:"p-gold",  cards:5, multi:[3,10],
+   w:{common:18,uncommon:28,rare:32,epic:16,legendary:5,ultimate:1}, pips:3,
+   desc:"Strong Rare+ odds. Real Epic & Legendary chances."},
+  {id:"elite",   name:"Elite Pack",    icon:"💎", cost:1400, color:"p-elite", cards:6, multi:[3,10],
+   w:{common:4,uncommon:12,rare:28,epic:32,legendary:18,ultimate:6}, pips:4,
+   desc:"Epic guaranteed. Serious shot at Legendary & Ultimate."},
+  {id:"legend",  name:"Legend Pack",   icon:"🔥", cost:3000, color:"p-legend",cards:7, multi:[3,10],
+   w:{common:0,uncommon:4,rare:13,epic:28,legendary:42,ultimate:13}, pips:5,
+   desc:"LEGENDARY GUARANTEED. Ultimate pull rates sky-high."},
 ];
 
-// =====================
+// ══════════════════════════════════
 // STATE
-// =====================
-let coins = parseInt(localStorage.getItem('nfl_coins') || '500');
-let collection = JSON.parse(localStorage.getItem('nfl_collection') || '[]');
-let gameStats = JSON.parse(localStorage.getItem('nfl_stats') || JSON.stringify({
-  spins: 0, flips: 0, picks: 0, packsOpened: 0, coinsEarned: 0, coinsSpent: 0, totalCards: 0,
-  wins: 0, losses: 0
+// ══════════════════════════════════
+let coins = +( localStorage.getItem("nfl_coins") || 750 );
+let coll  = JSON.parse(localStorage.getItem("nfl_coll") || "[]");
+let gs    = JSON.parse(localStorage.getItem("nfl_gs") || JSON.stringify({
+  spins:0,flips:0,slots:0,picks:0,dice:0,scratch:0,horses:0,hl:0,
+  packs:0,cards:0,earned:0,spent:0,wins:0,losses:0
 }));
 
-let spinCooldown = 0;
-let spinInterval = null;
-let isSpinning = false;
-let wheelAngle = 0;
-
-const WHEEL_SEGMENTS = [
-  { label: '💀 BANKRUPT', value: 0, color: '#1a0808' },
-  { label: '🪙 +50', value: 50, color: '#5c2d00' },
-  { label: '🪙 +100', value: 100, color: '#7a3a00' },
-  { label: '🪙 +150', value: 150, color: '#4a5e70' },
-  { label: '🪙 +200', value: 200, color: '#2a4a5e' },
-  { label: '⭐ +300', value: 300, color: '#4a3500' },
-  { label: '💫 +500', value: 500, color: '#6a5000' },
-  { label: '🔥 JACKPOT!', value: 1000, color: '#6a0000' },
-];
-
-function saveState() {
-  localStorage.setItem('nfl_coins', coins);
-  localStorage.setItem('nfl_collection', JSON.stringify(collection));
-  localStorage.setItem('nfl_stats', JSON.stringify(gameStats));
+function save(){
+  localStorage.setItem("nfl_coins", coins);
+  localStorage.setItem("nfl_coll", JSON.stringify(coll));
+  localStorage.setItem("nfl_gs", JSON.stringify(gs));
 }
 
-function updateCoins(delta) {
-  coins += delta;
-  if (coins < 0) coins = 0;
-  document.getElementById('coin-count').textContent = coins.toLocaleString();
-  document.getElementById('coin-count').classList.add('flicker');
-  setTimeout(() => document.getElementById('coin-count').classList.remove('flicker'), 500);
-  saveState();
+function addCoins(n){
+  coins += n; if(coins<0) coins=0;
+  const el = document.getElementById("coin-count");
+  el.textContent = coins.toLocaleString();
+  el.classList.remove("flk"); void el.offsetWidth; el.classList.add("flk");
+  save();
 }
 
-function showNotif(msg, type = 'gold') {
-  const n = document.getElementById('notif');
-  n.innerHTML = msg;
-  n.className = `notif ${type}-notif show`;
-  setTimeout(() => { n.classList.remove('show'); }, 3000);
+function toast(msg, type="ng"){
+  const n = document.getElementById("notif");
+  n.innerHTML = msg; n.className = `notif ${type} show`;
+  clearTimeout(n._t); n._t = setTimeout(()=>n.classList.remove("show"),3000);
 }
 
-function switchTab(tab) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  event.target.classList.add('active');
-  if (tab === 'collection') renderCollection();
-  if (tab === 'stats') renderStats();
+function rbadge(id, msg, type="win"){
+  const el = document.getElementById(id);
+  el.textContent = msg; el.className = `rbadge show ${type}`;
+  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove("show"),4000);
 }
 
-// =====================
-// WHEEL
-// =====================
-function drawWheel() {
-  const canvas = document.getElementById('wheel-canvas');
-  const ctx = canvas.getContext('2d');
-  const cx = 150, cy = 150, r = 140;
-  const seg = WHEEL_SEGMENTS.length;
-  const arc = (2 * Math.PI) / seg;
-
-  ctx.clearRect(0, 0, 300, 300);
-
-  // Outer ring
-  ctx.beginPath();
-  ctx.arc(cx, cy, r + 8, 0, Math.PI * 2);
-  ctx.fillStyle = '#B8860B';
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
-  ctx.fillStyle = '#FFD700';
-  ctx.fill();
-
-  WHEEL_SEGMENTS.forEach((seg_data, i) => {
-    const startAngle = i * arc + wheelAngle;
-    const endAngle = startAngle + arc;
-
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, startAngle, endAngle);
-    ctx.closePath();
-    ctx.fillStyle = seg_data.color;
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,215,0,0.3)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // Text
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(startAngle + arc / 2);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 11px Barlow Condensed, sans-serif';
-    ctx.fillText(seg_data.label, r - 10, 4);
-    ctx.restore();
-  });
-
-  // Center hub
-  ctx.beginPath();
-  ctx.arc(cx, cy, 22, 0, Math.PI * 2);
-  ctx.fillStyle = '#FFD700';
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(cx, cy, 18, 0, Math.PI * 2);
-  ctx.fillStyle = '#013369';
-  ctx.fill();
-  ctx.font = 'bold 12px Barlow Condensed, sans-serif';
-  ctx.fillStyle = '#FFD700';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('NFL', cx, cy);
+function goTab(id, btn){
+  document.querySelectorAll(".pnl").forEach(p=>p.classList.remove("on"));
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("on"));
+  document.getElementById("pnl-"+id).classList.add("on");
+  btn.classList.add("on");
+  if(id==="col") renderCol();
+  if(id==="stats") renderStats();
 }
 
-function spinWheel() {
-  if (isSpinning || spinCooldown > 0) return;
-  isSpinning = true;
-  const btn = document.getElementById('spin-btn');
-  btn.disabled = true;
-
-  const seg = WHEEL_SEGMENTS.length;
-  const arc = (2 * Math.PI) / seg;
-  const extraSpins = (Math.floor(Math.random() * 5) + 5) * Math.PI * 2;
-  const targetSeg = Math.floor(Math.random() * seg);
-  const targetAngle = -targetSeg * arc - arc / 2 + Math.PI * 1.5;
-  const totalAngle = extraSpins + targetAngle - wheelAngle;
-
-  let start = null;
-  const duration = 4000 + Math.random() * 1500;
-
-  function ease(t) {
-    return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+function burst(el, n=14){
+  const box = el.getBoundingClientRect ? el.getBoundingClientRect() : {left:innerWidth/2,top:innerHeight/2,width:0,height:0};
+  const cx=box.left+box.width/2, cy=box.top+box.height/2;
+  const em=["⭐","✨","🏆","💫","🎉","🏈","💎","🥇","🔥"];
+  for(let i=0;i<n;i++){
+    const d=document.createElement("div"); d.className="burst";
+    const a=(Math.PI*2*i/n)+Math.random()*.6, r=70+Math.random()*130;
+    d.style.cssText=`left:${cx}px;top:${cy}px;--tx:${Math.cos(a)*r}px;--ty:${Math.sin(a)*r}px;animation-delay:${Math.random()*.25}s;`;
+    d.textContent=em[Math.floor(Math.random()*em.length)];
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(),1500);
   }
+}
 
-  function frame(ts) {
-    if (!start) start = ts;
-    const elapsed = ts - start;
-    const t = Math.min(elapsed / duration, 1);
-    wheelAngle = (wheelAngle + totalAngle * (ease(t) - ease(Math.max(t - 0.001, 0)))) % (Math.PI * 2);
+// ══════════════════════════════════
+// FORTUNE WHEEL
+// ══════════════════════════════════
+const WSEGS = [
+  {label:"💀 BANKRUPT",val:0,    col:"#180505"},
+  {label:"🪙 +75",    val:75,   col:"#3a1800"},
+  {label:"🪙 +125",   val:125,  col:"#4a2200"},
+  {label:"🪙 +175",   val:175,  col:"#1a2e40"},
+  {label:"🪙 +250",   val:250,  col:"#0a2040"},
+  {label:"⭐ +400",   val:400,  col:"#302000"},
+  {label:"💫 +600",   val:600,  col:"#403000"},
+  {label:"🔥 JACKPOT!",val:1000,col:"#400000"},
+];
+let wAngle=0, wSpin=false, wCd=0, wCdI=null;
+
+function drawWheel(){
+  const cv=document.getElementById("wcanvas"), cx=cx2=120, cy=120, r=112;
+  const ctx=cv.getContext("2d"), n=WSEGS.length, arc=Math.PI*2/n;
+  ctx.clearRect(0,0,240,240);
+  // Outer ring
+  ctx.beginPath(); ctx.arc(cx,cy,r+7,0,Math.PI*2);
+  ctx.fillStyle="#b8860b"; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,cy,r+3,0,Math.PI*2);
+  ctx.fillStyle="#ffd700"; ctx.fill();
+  WSEGS.forEach((s,i)=>{
+    const sa=i*arc+wAngle, ea=sa+arc;
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,sa,ea); ctx.closePath();
+    ctx.fillStyle=s.col; ctx.fill();
+    ctx.strokeStyle="rgba(255,215,0,.25)"; ctx.lineWidth=.8; ctx.stroke();
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(sa+arc/2);
+    ctx.textAlign="right"; ctx.fillStyle="#fff";
+    ctx.font="bold 10.5px 'Barlow Condensed',sans-serif";
+    ctx.fillText(s.label, r-8, 4); ctx.restore();
+  });
+  ctx.beginPath(); ctx.arc(cx,cy,20,0,Math.PI*2); ctx.fillStyle="#ffd700"; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,cy,16,0,Math.PI*2); ctx.fillStyle="#013369"; ctx.fill();
+  ctx.font="bold 10px 'Barlow Condensed',sans-serif"; ctx.fillStyle="#ffd700";
+  ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("NFL",cx,cy);
+}
+
+function doSpin(){
+  if(wSpin||wCd>0) return;
+  wSpin=true; document.getElementById("spin-btn").disabled=true;
+  gs.spins++; save();
+  const n=WSEGS.length, arc=Math.PI*2/n;
+  const tSeg=Math.floor(Math.random()*n);
+  const extra=(5+Math.floor(Math.random()*5))*Math.PI*2;
+  const tAngle=-tSeg*arc-arc/2+Math.PI*1.5;
+  const total=extra+(tAngle-wAngle%(Math.PI*2));
+  let start=null; const dur=3800+Math.random()*1400;
+  function ease(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
+  let prev=0;
+  function frame(ts){
+    if(!start) start=ts;
+    const t=Math.min((ts-start)/dur,1), e=ease(t);
+    wAngle+=(total*(e-prev)); prev=e;
     drawWheel();
-    if (t < 1) {
-      requestAnimationFrame(frame);
+    if(t<1){ requestAnimationFrame(frame); return; }
+    wSpin=false;
+    const seg=WSEGS[tSeg];
+    const toast_el=document.getElementById("wtoa");
+    if(seg.val>0){
+      addCoins(seg.val); gs.earned+=seg.val; gs.wins++;
+      rbadge("w-rbadge",`🎉 +${seg.val} coins!`,"win");
+      toast_el.textContent=`+${seg.val}!`;
+      if(seg.val>=500) burst(document.getElementById("wcanvas"),20);
+      toast(`🎡 Wheel: +${seg.val} coins!`,"ng");
     } else {
-      isSpinning = false;
-      const won = WHEEL_SEGMENTS[targetSeg];
-      handleWheelResult(won);
+      gs.losses++;
+      rbadge("w-rbadge","💀 BANKRUPT! 0 coins","lose");
+      toast_el.textContent="BANKRUPT!";
+      toast("💀 Bankrupt! Better luck next spin.","nr");
     }
+    toast_el.className="whl-toast pop";
+    setTimeout(()=>toast_el.className="whl-toast",2200);
+    save();
+    wCd=30;
+    const bar=document.getElementById("spin-cd"), txt=document.getElementById("spin-cdt");
+    clearInterval(wCdI);
+    wCdI=setInterval(()=>{
+      wCd--; bar.style.width=((30-wCd)/30*100)+"%";
+      txt.textContent=wCd>0?`Next spin in ${wCd}s`:"";
+      if(wCd<=0){ clearInterval(wCdI); document.getElementById("spin-btn").disabled=false; bar.style.width="0%"; }
+    },1000);
   }
   requestAnimationFrame(frame);
-  gameStats.spins++;
-  saveState();
 }
 
-function handleWheelResult(seg) {
-  const toast = document.getElementById('wheel-toast');
-  const badge = document.getElementById('wheel-result-badge');
-
-  if (seg.value > 0) {
-    updateCoins(seg.value);
-    gameStats.coinsEarned += seg.value;
-    gameStats.wins++;
-    toast.textContent = `+${seg.value} COINS!`;
-    badge.textContent = `🎉 +${seg.value} coins earned!`;
-    badge.className = 'result-badge show win';
-    if (seg.value >= 500) spawnBurst(document.getElementById('wheel-canvas'));
-    showNotif(`🎰 Wheel: +${seg.value} coins!`, 'gold');
-  } else {
-    badge.textContent = `💀 BANKRUPT! No coins!`;
-    badge.className = 'result-badge show lose';
-    gameStats.losses++;
-    showNotif(`💀 Bankrupt! Better luck next spin.`, 'red');
-  }
-  toast.className = 'wheel-result-toast show';
-  setTimeout(() => { toast.className = 'wheel-result-toast'; }, 2000);
-  saveState();
-
-  spinCooldown = 30;
-  const bar = document.getElementById('spin-cooldown-bar');
-  const text = document.getElementById('spin-cooldown-text');
-  clearInterval(spinInterval);
-  spinInterval = setInterval(() => {
-    spinCooldown--;
-    bar.style.width = ((30 - spinCooldown) / 30 * 100) + '%';
-    text.textContent = spinCooldown > 0 ? `Next spin in ${spinCooldown}s` : '';
-    if (spinCooldown <= 0) {
-      clearInterval(spinInterval);
-      document.getElementById('spin-btn').disabled = false;
-      bar.style.width = '0%';
-    }
-  }, 1000);
-}
-
-// =====================
+// ══════════════════════════════════
 // COIN FLIP
-// =====================
-let flipCooling = false;
-function doFlip() {
-  if (flipCooling) return;
-  const bet = parseInt(document.getElementById('flip-bet').value);
-  const choice = document.getElementById('flip-choice').value;
-
-  if (coins < bet) { showNotif('Not enough coins!', 'red'); return; }
-
-  flipCooling = true;
-  const inner = document.getElementById('coin-inner');
-  const result = Math.random() < 0.5 ? 'heads' : 'tails';
-  const won = result === choice;
-
-  inner.classList.remove('flipping');
+// ══════════════════════════════════
+let flipBusy=false;
+function doFlip(){
+  if(flipBusy) return;
+  const bet=+document.getElementById("flip-bet").value;
+  const pick=document.getElementById("flip-pick").value;
+  if(coins<bet){ toast("Not enough coins!","nr"); return; }
+  flipBusy=true; gs.flips++; save();
+  addCoins(-bet); gs.spent+=bet;
+  const result=Math.random()<.5?"heads":"tails";
+  const won=result===pick;
+  const inner=document.getElementById("flipinner");
+  inner.style.transition="none"; inner.style.transform="rotateY(0)";
   void inner.offsetWidth;
-
-  // Determine rotation
-  let finalRot = won ? (result === 'heads' ? 1800 : 1980) : (result === 'heads' ? 1800 : 1980);
-  inner.style.transition = 'transform 1.5s cubic-bezier(0.4,0,0.2,1)';
-  inner.style.transform = `rotateY(${finalRot}deg)`;
-
-  updateCoins(-bet);
-  gameStats.coinsSpent += bet;
-
-  setTimeout(() => {
-    const badge = document.getElementById('flip-result');
-    if (won) {
-      updateCoins(bet * 2);
-      gameStats.coinsEarned += bet * 2;
-      gameStats.wins++;
-      badge.textContent = `🎉 ${result.toUpperCase()}! You won ${bet} coins!`;
-      badge.className = 'result-badge show win';
-      if (bet >= 100) spawnBurst(document.querySelector('.coin-flip-area'));
-      showNotif(`🪙 Flip win! +${bet} coins!`, 'gold');
-    } else {
-      gameStats.losses++;
-      badge.textContent = `💀 ${result.toUpperCase()}! Lost ${bet} coins.`;
-      badge.className = 'result-badge show lose';
-      showNotif(`🪙 Flip loss! -${bet} coins.`, 'red');
-    }
-    gameStats.flips++;
-    saveState();
-
-    setTimeout(() => {
-      flipCooling = false;
-      inner.style.transition = 'none';
-      inner.style.transform = 'rotateY(0deg)';
-    }, 2000);
-  }, 1600);
+  const target=(result==="tails"?1980:1800)+Math.random()*20;
+  inner.style.transition=`transform 1.6s cubic-bezier(.4,0,.2,1)`;
+  inner.style.transform=`rotateY(${target}deg)`;
+  setTimeout(()=>{
+    if(won){ addCoins(bet*2); gs.earned+=bet*2; gs.wins++; rbadge("flip-rbadge",`🎉 ${result.toUpperCase()}! +${bet} coins!`,"win"); if(bet>=100) burst(document.querySelector(".flip-coin")); toast(`🪙 Flip WIN! +${bet}🪙`,"ng"); }
+    else { gs.losses++; rbadge("flip-rbadge",`💀 ${result.toUpperCase()}! Lost ${bet}🪙`,"lose"); toast(`🪙 Flip LOSS! -${bet}🪙`,"nr"); }
+    save();
+    setTimeout(()=>{ flipBusy=false; inner.style.transition="none"; inner.style.transform="rotateY(0)"; },1500);
+  },1700);
 }
 
-// =====================
+// ══════════════════════════════════
+// SLOTS
+// ══════════════════════════════════
+const SLOT_SYMS=["💀","🏈","⭐","🏆","💎","7️⃣"];
+const SLOT_WEIGHTS=[8,20,18,12,10,4]; // weighted probabilities
+function pickSlotSym(){
+  const total=SLOT_WEIGHTS.reduce((a,b)=>a+b,0);
+  let r=Math.random()*total;
+  for(let i=0;i<SLOT_SYMS.length;i++){r-=SLOT_WEIGHTS[i];if(r<=0)return SLOT_SYMS[i];}
+  return SLOT_SYMS[0];
+}
+function buildSlots(){
+  for(let i=0;i<3;i++){
+    const strip=document.getElementById("sr"+i);
+    strip.innerHTML=Array.from({length:20},()=>`<div class="slot-cell">${SLOT_SYMS[Math.floor(Math.random()*SLOT_SYMS.length)]}</div>`).join("");
+    strip.style.transform="translateY(0)";
+  }
+}
+let slotBusy=false;
+function doSlots(){
+  if(slotBusy) return;
+  const cost=75;
+  if(coins<cost){ toast("Need 75🪙 for slots!","nr"); return; }
+  slotBusy=true; addCoins(-cost); gs.spent+=cost; gs.slots++; save();
+  document.getElementById("slot-btn").disabled=true;
+  const results=[pickSlotSym(),pickSlotSym(),pickSlotSym()];
+  // Animate reels
+  for(let i=0;i<3;i++){
+    const strip=document.getElementById("sr"+i);
+    // fill with random then end on result
+    const cells=[];
+    for(let j=0;j<15;j++) cells.push(`<div class="slot-cell">${SLOT_SYMS[Math.floor(Math.random()*SLOT_SYMS.length)]}</div>`);
+    cells.push(`<div class="slot-cell">${results[i]}</div>`);
+    strip.innerHTML=cells.join("");
+    strip.style.transition="none"; strip.style.transform="translateY(0)";
+    void strip.offsetWidth;
+    setTimeout(()=>{
+      strip.style.transition=`transform ${0.8+i*.3}s cubic-bezier(.2,1,.3,1)`;
+      strip.style.transform=`translateY(-${15*72}px)`;
+    },50+i*100);
+  }
+  setTimeout(()=>{
+    slotBusy=false;
+    document.getElementById("slot-btn").disabled=false;
+    const [a,b,c]=results;
+    let prize=0, msg="";
+    if(a===b&&b===c){
+      if(a==="7️⃣"){ prize=5000; msg="🔥 TRIPLE 7s! +5,000🪙!"; burst(document.getElementById("slot-wrap"),25); }
+      else if(a==="🏆"){ prize=1500; msg="🏆 TRIPLE TROPHY! +1,500🪙!"; burst(document.getElementById("slot-wrap")); }
+      else if(a==="🏈"){ prize=800; msg="🏈 TRIPLE FOOTBALL! +800🪙!"; burst(document.getElementById("slot-wrap"),10); }
+      else if(a==="💎"){ prize=1200; msg="💎 TRIPLE DIAMOND! +1,200🪙!"; burst(document.getElementById("slot-wrap"),12); }
+      else if(a==="💀"){ prize=-200; msg="💀 TRIPLE SKULL! -200🪙!"; }
+      else{ prize=300; msg=`${a}${a}${a} TRIPLE! +300🪙!`; }
+    } else if(a===b||b===c||a===c){ prize=200; msg="✌ Two of a kind! +200🪙!"; }
+    else{ prize=-10; msg="No match. -10🪙"; }
+    if(prize>0){ addCoins(prize); gs.earned+=prize; gs.wins++; rbadge("slot-rbadge",msg,"win"); toast(`🎰 ${msg}`,"ng"); }
+    else { gs.losses++; addCoins(prize); rbadge("slot-rbadge",msg,"lose"); toast(`🎰 ${msg}`,"nr"); }
+    save();
+  }, 2000);
+}
+
+// ══════════════════════════════════
 // MYSTERY PICK
-// =====================
-let mysteryPrizes = [];
-let mysteryPicked = false;
-
-function resetMystery() {
-  mysteryPrizes = shuffleArr([150, 50, Math.random() < 0.2 ? 300 : 75]);
-  mysteryPicked = false;
-  const res = document.getElementById('mystery-result');
-  res.className = 'result-badge';
-  res.textContent = '';
-  document.getElementById('mystery-reset-btn').style.display = 'none';
-  for (let i = 0; i < 3; i++) {
-    const mc = document.getElementById('mc-' + i);
-    mc.textContent = '🏈';
-    mc.style.background = 'linear-gradient(160deg,var(--nfl-blue),#001030)';
-    mc.style.borderColor = 'rgba(255,255,255,0.15)';
-    mc.style.cursor = 'pointer';
-    mc.onclick = () => pickMystery(i);
-  }
+// ══════════════════════════════════
+let mystDone=false, mystPrizes=[];
+function resetMystery(){
+  mystDone=false;
+  const prizes=[300,75,-100]; // win, meh, LOSE (trap)
+  mystPrizes=prizes.sort(()=>Math.random()-.5);
+  document.getElementById("myst-rbadge").className="rbadge";
+  document.getElementById("myst-reset").style.display="none";
+  const ct=document.getElementById("mystery-cards");
+  ct.innerHTML=Array.from({length:3},(_,i)=>`
+    <div class="cface" id="mc${i}" onclick="pickMyst(${i})" style="font-size:2rem;">🏈</div>
+  `).join("");
 }
-
-function pickMystery(idx) {
-  if (mysteryPicked) return;
-  mysteryPicked = true;
-  gameStats.picks++;
-
-  const prize = mysteryPrizes[idx];
-  const emojis = ['💎', '🏆', '💰'];
-
-  for (let i = 0; i < 3; i++) {
-    const mc = document.getElementById('mc-' + i);
-    const v = mysteryPrizes[i];
-    mc.style.cursor = 'default';
-    mc.onclick = null;
-    mc.onmouseover = null;
-    mc.style.transform = '';
-    setTimeout(() => {
-      mc.textContent = v >= 200 ? '💎' : v >= 100 ? '🏆' : '🪙';
-      mc.style.background = i === idx ? (v >= 200 ? 'linear-gradient(160deg,#0a0040,#050020)' : 'linear-gradient(160deg,#002010,#001008)') : 'linear-gradient(160deg,#0d0d0d,#080808)';
-      mc.style.borderColor = i === idx ? (v >= 200 ? '#8B00FF' : '#2a6030') : '#222';
-    }, i * 150);
-  }
-
-  const res = document.getElementById('mystery-result');
-  if (prize >= 150) { gameStats.wins++; gameStats.coinsEarned += prize; }
-  else { gameStats.losses++; }
-  updateCoins(prize);
-  res.textContent = prize >= 150 ? `🎉 You found ${prize} coins!` : prize === 75 ? `😐 Just 75 coins...` : `🙁 Only ${prize} coins`;
-  res.className = `result-badge show ${prize >= 150 ? 'win' : 'lose'}`;
-  document.getElementById('mystery-reset-btn').style.display = 'inline-flex';
-  if (prize >= 200) spawnBurst(document.getElementById('mystery-area'));
-  showNotif(prize >= 150 ? `🎯 Mystery: Found ${prize} coins!` : `🎯 Mystery: ${prize} coins`, prize >= 150 ? 'gold' : 'red');
-  saveState();
-}
-
-// =====================
-// PACK STORE
-// =====================
-function renderStore() {
-  const grid = document.querySelector('.packs-grid');
-  grid.innerHTML = PACKS.map(pack => {
-    const pips = Array.from({length: 5}, (_, i) => `<div class="rarity-pip ${i < pack.rarity ? 'filled' : ''}" style="background:${i < pack.rarity ? getRarityColor(pack.rarity) : '#333'}"></div>`).join('');
-    return `
-      <div class="pack-card pack-${pack.color}" onclick="buyPack('${pack.id}')">
-        <span class="pack-icon">${pack.icon}</span>
-        <div class="pack-name">${pack.name}</div>
-        <div class="pack-desc">${pack.desc}</div>
-        <div class="pack-desc" style="color:rgba(255,255,255,0.4);">${pack.cards} cards per pack</div>
-        <div class="pack-price">🪙 ${pack.cost.toLocaleString()}</div>
-        <div class="pack-rarity-bar">${pips}</div>
-      </div>
-    `;
-  }).join('');
-}
-
-function getRarityColor(r) {
-  return ['#8B4513','#708090','#FFD700','#8B00FF','#FF4500'][r-1] || '#888';
-}
-
-function buyPack(packId) {
-  const pack = PACKS.find(p => p.id === packId);
-  if (coins < pack.cost) {
-    showNotif(`Need ${pack.cost - coins} more coins!`, 'red');
-    return;
-  }
-  updateCoins(-pack.cost);
-  gameStats.coinsSpent += pack.cost;
-  openPackAnimation(pack);
-}
-
-// =====================
-// CARD GENERATION
-// =====================
-function weightedRarity(weights) {
-  const total = Object.values(weights).reduce((a,b) => a+b, 0);
-  let r = Math.random() * total;
-  for (const [key, w] of Object.entries(weights)) {
-    r -= w;
-    if (r <= 0) return key;
-  }
-  return 'common';
-}
-
-function generateCard(rarityKey) {
-  const rarity = RARITIES[rarityKey];
-  const eligible = NFL_PLAYERS.filter(p => p.overall >= rarity.minOvr - 5 && p.overall <= rarity.maxOvr + 3);
-  const player = eligible.length ? eligible[Math.floor(Math.random() * eligible.length)] : NFL_PLAYERS[Math.floor(Math.random() * NFL_PLAYERS.length)];
-  const ovr = Math.min(99, Math.max(70, player.overall + Math.floor((Math.random()-0.5)*4)));
-  return { ...player, overall: ovr, rarity: rarityKey, id: Date.now() + Math.random(), pulledAt: Date.now() };
-}
-
-function generatePackCards(pack) {
-  return Array.from({length: pack.cards}, () => generateCard(weightedRarity(pack.rarityWeights)));
-}
-
-// =====================
-// PACK OPENING ANIMATION
-// =====================
-function openPackAnimation(pack) {
-  const overlay = document.getElementById('pack-overlay');
-  const anim = document.getElementById('pack-open-anim');
-  const revSection = document.getElementById('reveal-section');
-
-  document.getElementById('opening-icon').textContent = pack.icon;
-  document.getElementById('opening-pack-name').textContent = pack.name.toUpperCase();
-  anim.style.display = 'flex';
-  revSection.style.display = 'none';
-  overlay.classList.add('active');
-
-  const cards = generatePackCards(pack);
-
-  anim.onclick = () => {
-    anim.style.display = 'none';
-    revSection.style.display = 'block';
-    revealCards(cards, pack);
-    gameStats.packsOpened++;
-    gameStats.totalCards += cards.length;
-    collection.unshift(...cards);
-    saveState();
-    if (cards.some(c => c.rarity === 'ultimate' || c.rarity === 'legendary')) {
-      spawnBurst(overlay);
-    }
-  };
-}
-
-function rarityGradient(r) {
-  const map = {
-    common: 'linear-gradient(160deg,#1e2a3a,#0d1520)',
-    uncommon: 'linear-gradient(160deg,#0a2010,#051008)',
-    rare: 'linear-gradient(160deg,#001035,#000820)',
-    epic: 'linear-gradient(160deg,#1a0035,#0d0020)',
-    legendary: 'linear-gradient(160deg,#1a0800,#100500)',
-    ultimate: 'linear-gradient(160deg,#1a1200,#0d0a00)',
-  };
-  return map[r] || map.common;
-}
-
-function rarityBorder(r) {
-  const map = { common:'#3a4a5a', uncommon:'#2a6030', rare:'#0040a0', epic:'#6020c0', legendary:'#c04000', ultimate:'#FFD700' };
-  return map[r] || map.common;
-}
-
-function rarityTextColor(r) {
-  const map = { common:'#9bbdd4', uncommon:'#70d890', rare:'#5090ff', epic:'#b070ff', legendary:'#ff8060', ultimate:'#FFD700' };
-  return map[r] || '#aaa';
-}
-
-function cardStatsHTML(card) {
-  const posStats = {
-    QB: [['SPD','82'],['ACC','89'],['AWR','94'],['THR','card.overall']],
-    WR: [['SPD','card.overall'],['CTH','91'],['RTE','88'],['AGI','85']],
-    RB: [['SPD','card.overall'],['POW','86'],['AGI','88'],['AWR','82']],
-    TE: [['CTH','card.overall'],['BLK','80'],['SPD','78'],['AWR','85']],
-  };
-  const s = posStats[card.pos] || [['SPD','82'],['STR','85'],['AGI','83'],['AWR','80']];
-  return s.map(([l,v]) => `<div class="card-stat"><div class="card-stat-label">${l}</div><div class="card-stat-val">${v === 'card.overall' ? card.overall : v}</div></div>`).join('');
-}
-
-function revealCards(cards, pack) {
-  const container = document.getElementById('reveal-container');
-  const title = document.getElementById('reveal-title');
-  title.textContent = pack.name.toUpperCase() + ' — YOUR PULLS';
-
-  container.innerHTML = cards.map((card, idx) => {
-    const rc = RARITIES[card.rarity];
-    const shimmerClass = (card.rarity === 'legendary' || card.rarity === 'ultimate') ? 'shimmer' : '';
-    const border = rarityBorder(card.rarity);
-    const textColor = rarityTextColor(card.rarity);
-    const bg = rarityGradient(card.rarity);
-    const boxShadow = card.rarity === 'ultimate' ? `0 0 30px rgba(255,215,0,0.4), inset 0 0 20px rgba(255,215,0,0.05)` : card.rarity === 'legendary' ? `0 0 20px rgba(255,96,48,0.3)` : 'none';
-
-    return `
-      <div class="player-card" id="card-${idx}" onclick="flipCard(${idx})" style="cursor:pointer;" data-rarity="${card.rarity}">
-        <div class="card-inner">
-          <div class="card-back">
-            <div class="card-back-pattern"></div>
-            <div class="card-back-logo">NFL<br><span>DRAFT</span><br>PRO</div>
-          </div>
-          <div class="card-front rarity-${card.rarity} ${shimmerClass}" style="background:${bg};border:2px solid ${border};box-shadow:${boxShadow};">
-            <div class="card-header">
-              <div>
-                <div class="card-overall" style="color:${textColor}">${card.overall}</div>
-                <div class="card-pos" style="color:${textColor};border:1px solid ${border}">${card.pos}</div>
-              </div>
-              <div class="card-team-badge">${card.team}</div>
-            </div>
-            <div class="card-player-area">
-              <div style="font-size:3.5rem;position:relative;z-index:1;">${card.emoji}</div>
-            </div>
-            <div class="card-stats">${cardStatsHTML(card)}</div>
-            <div class="card-footer">
-              <div class="card-name" style="color:white;">${card.name}</div>
-              <div class="card-rarity-label" style="color:${textColor}">${rc.label}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  // Auto-flip with delay
-  cards.forEach((_, i) => {
-    setTimeout(() => {
-      const el = document.getElementById('card-' + i);
-      if (el) flipCard(i);
-    }, 600 + i * 300);
+function pickMyst(i){
+  if(mystDone) return;
+  mystDone=true; gs.picks++; save();
+  const prize=mystPrizes[i];
+  // Reveal all
+  [0,1,2].forEach(j=>{
+    const el=document.getElementById("mc"+j);
+    el.classList.add("revealed");
+    const v=mystPrizes[j];
+    setTimeout(()=>{
+      el.textContent=v>=250?"💎":v>0?"🏆":"💣";
+      el.style.background=j===i?(v>=250?"linear-gradient(160deg,#0a0035,#050018)":v>0?"linear-gradient(160deg,#002010,#001008)":"linear-gradient(160deg,#200005,#100003)"):"linear-gradient(160deg,#0d0d0d,#080808)";
+      el.style.borderColor=j===i?(v>=250?"#7000cc":v>0?"#2a6030":"#cc0000"):"#1a1a1a";
+    },j*120);
   });
+  if(prize>0){ addCoins(prize); gs.earned+=prize; gs.wins++; rbadge("myst-rbadge",`🎉 Found ${prize}🪙!`,"win"); if(prize>=250) burst(document.getElementById("mystery-cards")); toast(`🎴 Mystery: +${prize}🪙`,"ng"); }
+  else if(prize<0){ addCoins(prize); gs.losses++; rbadge("myst-rbadge",`💣 TRAP! ${prize}🪙 penalty!`,"lose"); toast(`🎴 Picked the TRAP! ${prize}🪙`,"nr"); }
+  else { gs.wins++; rbadge("myst-rbadge","😐 Only 75🪙... barely anything.","win"); addCoins(75); }
+  save();
+  document.getElementById("myst-reset").style.display="inline-flex";
 }
 
-function flipCard(idx) {
-  const card = document.getElementById('card-' + idx);
-  if (card) {
-    card.classList.toggle('flipped');
-    const rarity = card.dataset.rarity;
-    if (card.classList.contains('flipped') && (rarity === 'legendary' || rarity === 'ultimate')) {
-      spawnBurst(card, 8);
+// ══════════════════════════════════
+// DICE DUEL
+// ══════════════════════════════════
+let diceBusy=false;
+const DICE_FACES=["","⚀","⚁","⚂","⚃","⚄","⚅"];
+function doDice(){
+  if(diceBusy) return;
+  if(coins<50){ toast("Need 50🪙 for dice!","nr"); return; }
+  diceBusy=true; addCoins(-50); gs.spent+=50; gs.dice++; save();
+  document.getElementById("dice-btn").disabled=true;
+  const d1el=document.getElementById("d1"), d2el=document.getElementById("d2");
+  d1el.classList.add("rolling"); d2el.classList.add("rolling");
+  document.getElementById("dice-sum").textContent="Rolling...";
+  let t=0;
+  const roll=setInterval(()=>{
+    d1el.textContent=DICE_FACES[Math.ceil(Math.random()*6)];
+    d2el.textContent=DICE_FACES[Math.ceil(Math.random()*6)];
+    t+=80; if(t>1000) clearInterval(roll);
+  },80);
+  setTimeout(()=>{
+    const r1=Math.ceil(Math.random()*6), r2=Math.ceil(Math.random()*6);
+    d1el.classList.remove("rolling"); d2el.classList.remove("rolling");
+    d1el.textContent=DICE_FACES[r1]; d2el.textContent=DICE_FACES[r2];
+    const sum=r1+r2;
+    document.getElementById("dice-sum").textContent=`You rolled: ${sum}`;
+    let prize=0, msg="";
+    if(r1===1&&r2===1){ prize=-200; msg="💀 SNAKE EYES! -200🪙 penalty!"; gs.losses++; }
+    else if(sum===7){ prize=300; msg="🎯 EXACT 7! +300🪙!"; gs.wins++; burst(d1el,12); }
+    else if(sum>7){ prize=150; msg=`📈 Over 7 (${sum})! +150🪙!`; gs.wins++; }
+    else { prize=0; msg=`📉 Under 7 (${sum}). Lose your bet!`; gs.losses++; }
+    if(prize>0){ addCoins(prize); gs.earned+=prize; rbadge("dice-rbadge",msg,"win"); toast(`🎲 ${msg}`,"ng"); }
+    else if(prize<0){ addCoins(prize); rbadge("dice-rbadge",msg,"lose"); toast(`🎲 ${msg}`,"nr"); }
+    else { rbadge("dice-rbadge",msg,"lose"); toast(`🎲 ${msg}`,"nr"); }
+    save(); diceBusy=false;
+    document.getElementById("dice-btn").disabled=false;
+  },1200);
+}
+
+// ══════════════════════════════════
+// SCRATCH CARD
+// ══════════════════════════════════
+let scratchActive=false, scratchPrize=0, scratchDone=false;
+const SCRATCH_PRIZES=[
+  {val:0,   label:"😢 NOTHING",  p:35},
+  {val:50,  label:"🪙 +50",      p:28},
+  {val:100, label:"🪙 +100",     p:18},
+  {val:250, label:"⭐ +250",     p:10},
+  {val:500, label:"💫 +500",     p:6},
+  {val:1000,label:"🔥 +1,000!",  p:3},
+];
+function pickScratch(){
+  const total=SCRATCH_PRIZES.reduce((a,b)=>a+b.p,0);
+  let r=Math.random()*total;
+  for(const p of SCRATCH_PRIZES){r-=p.p; if(r<=0)return p;}
+  return SCRATCH_PRIZES[0];
+}
+function buyScratch(){
+  if(coins<40){ toast("Need 40🪙 for scratch card!","nr"); return; }
+  addCoins(-40); gs.spent+=40; gs.scratch++; save();
+  document.getElementById("scratch-btn").disabled=true;
+  scratchDone=false;
+  const chosen=pickScratch(); scratchPrize=chosen.val;
+  const prizeEl=document.getElementById("scratch-prize");
+  prizeEl.style.opacity="1";
+  prizeEl.innerHTML=`<div style="font-size:1.8rem;">${chosen.val>0?"🤑":"😢"}</div><div style="color:${chosen.val>=500?"var(--gold)":chosen.val>0?"#70d878":"#888"}">${chosen.label}</div>`;
+  // Reset canvas
+  const cv=document.getElementById("scratch-canvas");
+  const ctx=cv.getContext("2d");
+  ctx.clearRect(0,0,200,120);
+  ctx.fillStyle="#2a3a55";
+  ctx.fillRect(0,0,200,120);
+  // draw scratch texture
+  for(let y=0;y<120;y+=8){
+    ctx.fillStyle=y%16===0?"#243248":"#1e2c40";
+    ctx.fillRect(0,y,200,8);
+  }
+  ctx.fillStyle="rgba(255,215,0,0.12)";
+  ctx.font="bold 11px 'Barlow Condensed',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText("✦ SCRATCH HERE ✦",100,55);
+  ctx.fillText("✦ SCRATCH HERE ✦",100,75);
+  let scratched=0;
+  cv.onmousedown=cv.ontouchstart=()=>{ scratchActive=true; };
+  cv.onmouseup=cv.ontouchend=()=>{ scratchActive=false; };
+  cv.onmousemove=cv.ontouchmove=(e)=>{
+    if(!scratchActive||scratchDone) return;
+    const r=cv.getBoundingClientRect();
+    const x=(e.clientX||e.touches[0].clientX)-r.left;
+    const y=(e.clientY||e.touches[0].clientY)-r.top;
+    ctx.globalCompositeOperation="destination-out";
+    ctx.beginPath(); ctx.arc(x,y,18,0,Math.PI*2); ctx.fill();
+    ctx.globalCompositeOperation="source-over";
+    scratched+=28;
+    if(scratched>3000 && !scratchDone){
+      scratchDone=true; cv.style.opacity="0";
+      if(scratchPrize>0){ addCoins(scratchPrize); gs.earned+=scratchPrize; gs.wins++; rbadge("scratch-rbadge",`🎟️ ${chosen.label}!`,"win"); if(scratchPrize>=500) burst(cv); toast(`🎟️ Scratch: ${chosen.label}!`,"ng"); }
+      else { gs.losses++; rbadge("scratch-rbadge","😢 Nothing. Better luck next time.","lose"); toast("🎟️ Scratch: Nothing this time.","nr"); }
+      save(); document.getElementById("scratch-btn").disabled=false; cv.style.opacity="0";
     }
-  }
+  };
+  document.getElementById("scratch-rbadge").className="rbadge";
 }
 
-function flipAllCards() {
-  document.querySelectorAll('.player-card').forEach(c => c.classList.add('flipped'));
+// ══════════════════════════════════
+// HORSE RACE
+// ══════════════════════════════════
+let horseBusy=false;
+function doHorse(){
+  if(horseBusy) return;
+  if(coins<100){ toast("Need 100🪙 for horse race!","nr"); return; }
+  addCoins(-100); gs.spent+=100; gs.horses++; save();
+  horseBusy=true; document.getElementById("horse-btn").disabled=true;
+  const pick=+document.getElementById("horse-pick").value;
+  const fills=[0,1,2,3].map(i=>document.getElementById("rf"+i));
+  fills.forEach(f=>{f.style.width="0%";f.style.transition="none";});
+  void document.getElementById("horse-track").offsetWidth;
+  const pos=[0,0,0,0];
+  const winner=Math.random()<.3?pick:Math.floor(Math.random()*4); // slightly biased
+  let frames=0;
+  const maxF=120;
+  const raceI=setInterval(()=>{
+    frames++;
+    for(let i=0;i<4;i++){
+      if(i===winner) pos[i]+=1.5+Math.random()*1.2;
+      else pos[i]+=.8+Math.random()*1.8;
+      if(pos[i]>100) pos[i]=100;
+      fills[i].style.transition="width .1s ease-out";
+      fills[i].style.width=pos[i]+"%";
+    }
+    if(frames>=maxF||pos.some(p=>p>=100)){
+      clearInterval(raceI);
+      fills[winner].style.width="100%";
+      const won=winner===pick;
+      setTimeout(()=>{
+        if(won){ addCoins(350); gs.earned+=350; gs.wins++; rbadge("horse-rbadge","🏆 YOUR HORSE WON! +350🪙!","win"); burst(document.getElementById("horse-track"),18); toast("🐎 Your horse WON! +350🪙!","ng"); }
+        else { gs.losses++; rbadge("horse-rbadge","💀 Your horse lost. -100🪙","lose"); toast("🐎 Didn't place. Lost your bet.","nr"); }
+        save(); horseBusy=false; document.getElementById("horse-btn").disabled=false;
+      },400);
+    }
+  },50);
 }
 
-function closeOverlay() {
-  document.getElementById('pack-overlay').classList.remove('active');
+// ══════════════════════════════════
+// HIGH-LOW
+// ══════════════════════════════════
+const HL_CARDS=["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+const HL_EMOJIS=["2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟","🃏","👸","🤴","🂡"];
+const HL_VALS=[2,3,4,5,6,7,8,9,10,11,12,13,14];
+let hlActive=false, hlCurr=0, hlStreak=0, hlPot=0, hlBusy=false;
+function startHL(){
+  if(coins<60){ toast("Need 60🪙 to play High-Low!","nr"); return; }
+  addCoins(-60); gs.spent+=60; gs.hl++; save();
+  hlActive=true; hlStreak=0; hlPot=60; hlBusy=false;
+  hlCurr=Math.floor(Math.random()*HL_VALS.length);
+  document.getElementById("hl-val").textContent=HL_CARDS[hlCurr];
+  document.getElementById("hl-emoji").textContent=HL_EMOJIS[hlCurr];
+  document.getElementById("hl-streak").textContent="0";
+  document.getElementById("hl-high").disabled=false;
+  document.getElementById("hl-low").disabled=false;
+  document.getElementById("hl-start").disabled=true;
+  document.getElementById("hl-rbadge").className="rbadge";
+}
+function doHL(guess){
+  if(!hlActive||hlBusy) return;
+  hlBusy=true;
+  document.getElementById("hl-high").disabled=true;
+  document.getElementById("hl-low").disabled=true;
+  const next=Math.floor(Math.random()*HL_VALS.length);
+  const currVal=HL_VALS[hlCurr], nextVal=HL_VALS[next];
+  const win=(guess==="high"&&nextVal>currVal)||(guess==="low"&&nextVal<currVal);
+  setTimeout(()=>{
+    document.getElementById("hl-val").textContent=HL_CARDS[next];
+    document.getElementById("hl-emoji").textContent=HL_EMOJIS[next];
+    hlCurr=next;
+    if(currVal===nextVal){
+      // tie — no result, keep going
+      document.getElementById("hl-rbadge").textContent="↔ Tie! Try again.";
+      document.getElementById("hl-rbadge").className="rbadge show win";
+      hlBusy=false;
+      document.getElementById("hl-high").disabled=false;
+      document.getElementById("hl-low").disabled=false;
+    } else if(win){
+      hlStreak++; hlPot=Math.round(hlPot*1.6);
+      document.getElementById("hl-streak").textContent=hlStreak;
+      if(hlStreak>=3){ addCoins(hlPot); gs.earned+=hlPot; gs.wins++; rbadge("hl-rbadge",`🔥 ${hlStreak} streak! Cashed out ${hlPot}🪙!`,"big"); burst(document.getElementById("hl-card"),16); toast(`📊 High-Low: ${hlStreak}-streak! +${hlPot}🪙!`,"ng"); hlActive=false; document.getElementById("hl-start").disabled=false; }
+      else { rbadge("hl-rbadge",`✅ Correct! Pot now ${hlPot}🪙 — keep going or cash out at 3!`,"win"); hlBusy=false; document.getElementById("hl-high").disabled=false; document.getElementById("hl-low").disabled=false; }
+    } else {
+      gs.losses++; hlActive=false; rbadge("hl-rbadge",`❌ Wrong! Lost it all.`,"lose"); toast("📊 High-Low: Wrong guess! No payout.","nr");
+      save(); document.getElementById("hl-start").disabled=false;
+    }
+    save();
+  },500);
 }
 
-// =====================
-// COLLECTION RENDER
-// =====================
-const RARITY_ORDER = ['ultimate','legendary','epic','rare','uncommon','common'];
+// ══════════════════════════════════
+// CARD GENERATION
+// ══════════════════════════════════
+function wRar(w){
+  const total=Object.values(w).reduce((a,b)=>a+b,0);
+  let r=Math.random()*total;
+  for(const[k,v] of Object.entries(w)){r-=v;if(r<=0)return k;}
+  return "common";
+}
 
-function renderCollection() {
-  const filter = document.getElementById('col-filter').value;
-  const sort = document.getElementById('col-sort').value;
-  const grid = document.getElementById('collection-grid');
+function genCard(rarKey){
+  const rar=RARITIES[rarKey];
+  const pool=PLAYERS.filter(p=>p.ovr>=rar.minO-4&&p.ovr<=rar.maxO+3);
+  const base=pool.length?pool[Math.floor(Math.random()*pool.length)]:PLAYERS[Math.floor(Math.random()*PLAYERS.length)];
+  const ovr=Math.min(99,Math.max(70,base.ovr+Math.floor((Math.random()-.5)*3)));
+  return {...base, ovr, rarity:rarKey, uid:Date.now()+Math.random(), pulledAt:Date.now()};
+}
 
-  let cards = [...collection];
-  if (filter !== 'all') cards = cards.filter(c => c.rarity === filter);
-
-  if (sort === 'overall') cards.sort((a,b) => b.overall - a.overall);
-  else if (sort === 'rarity') cards.sort((a,b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity));
-
-  document.getElementById('col-count').textContent = `${cards.length} cards`;
-
-  if (cards.length === 0) {
-    grid.innerHTML = `<div class="collection-empty"><span class="collection-empty-icon">📋</span><div>${filter !== 'all' ? 'No ' + filter + ' cards yet.' : 'No cards yet — open some packs!'}</div></div>`;
-    return;
-  }
-
-  grid.innerHTML = cards.map(card => {
-    const textColor = rarityTextColor(card.rarity);
-    const bg = rarityGradient(card.rarity);
-    const border = rarityBorder(card.rarity);
-    const shimmerClass = (card.rarity === 'legendary' || card.rarity === 'ultimate') ? 'shimmer' : '';
+// ══════════════════════════════════
+// PACK STORE
+// ══════════════════════════════════
+const PIP_COLS=["","#6b3a10","#607090","#a07800","#7000cc","#cc3000"];
+function renderStore(){
+  const grid=document.getElementById("store-grid");
+  grid.innerHTML=PACKS.map(p=>{
+    const pips=Array.from({length:5},(_,i)=>`<div class="pip" style="${i<p.pips?"background:"+PIP_COLS[p.pips]+";":""}"></div>`).join("");
     return `
-      <div class="card-front rarity-${card.rarity} ${shimmerClass}" style="background:${bg};border:2px solid ${border};border-radius:12px;position:relative;overflow:hidden;min-height:200px;padding-bottom:0.5rem;">
-        <div class="card-header">
+    <div class="pack-card ${p.color}">
+      <span class="pack-icon">${p.icon}</span>
+      <div class="pack-name">${p.name}</div>
+      <div class="pack-desc">${p.desc}</div>
+      <div class="pack-cnt">${p.cards} cards per pack</div>
+      <div class="pack-price">🪙 ${p.cost.toLocaleString()}</div>
+      <div class="pip-row">${pips}</div>
+      <div class="multi-btns">
+        <button class="multi-btn" onclick="buyPack('${p.id}',1)">Open 1</button>
+        <button class="multi-btn" onclick="buyPack('${p.id}',3)">Open 3</button>
+        <button class="multi-btn" onclick="buyPack('${p.id}',10)">Open 10</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function buyPack(packId, qty){
+  const pack=PACKS.find(p=>p.id===packId);
+  const total=pack.cost*qty;
+  if(coins<total){ toast(`Need ${(total-coins).toLocaleString()}🪙 more!`,"nr"); return; }
+  addCoins(-total); gs.spent+=total;
+  const allCards=[];
+  for(let i=0;i<qty;i++) for(let j=0;j<pack.cards;j++) allCards.push(genCard(wRar(pack.w)));
+  gs.packs+=qty; gs.cards+=allCards.length; coll.unshift(...allCards); save();
+  openPackAnim(pack, allCards, qty);
+}
+
+// ══════════════════════════════════
+// PACK OPENING
+// ══════════════════════════════════
+function openPackAnim(pack, cards, qty){
+  const ov=document.getElementById("overlay");
+  const animDiv=document.getElementById("open-anim");
+  const revSec=document.getElementById("rev-section");
+  document.getElementById("open-icon").textContent=pack.icon;
+  document.getElementById("open-name").textContent=(qty>1?`${qty}x `:"")+pack.name.toUpperCase();
+  animDiv.style.display="flex"; revSec.style.display="none";
+  ov.classList.add("on");
+  ov.onclick=(e)=>{ if(e.target===ov||animDiv.contains(e.target)){ animDiv.style.display="none"; revSec.style.display="block"; revealCards(cards,pack,qty); ov.onclick=null; } };
+}
+
+function rarBg(r){return{common:"linear-gradient(160deg,#162030,#0a1420)",uncommon:"linear-gradient(160deg,#081a0f,#040e07)",rare:"linear-gradient(160deg,#00082a,#000416)",epic:"linear-gradient(160deg,#140028,#0a0018)",legendary:"linear-gradient(160deg,#160600,#0d0400)",ultimate:"linear-gradient(160deg,#140f00,#0a0800)"}[r]||"linear-gradient(160deg,#111,#0a0a0a)";}
+function rarBorder(r){return{common:"#304050",uncommon:"#206030",rare:"#1050c0",epic:"#6020b0",legendary:"#c04010",ultimate:"#c8a800"}[r]||"#333";}
+function rarCol(r){return{common:"#7aaccc",uncommon:"#50d878",rare:"#4488ff",epic:"#aa55ff",legendary:"#ff7030",ultimate:"#FFD700"}[r]||"#aaa";}
+
+function cardHTML(card, idx){
+  const rc=RARITIES[card.rarity];
+  const bg=rarBg(card.rarity), border=rarBorder(card.rarity), col=rarCol(card.rarity);
+  const glow=card.rarity==="ultimate"?`0 0 28px rgba(255,215,0,.55),inset 0 0 18px rgba(255,215,0,.1)`:card.rarity==="legendary"?`0 0 20px rgba(255,112,48,.45),inset 0 0 12px rgba(255,112,48,.08)`:"none";
+  const shimmer=(card.rarity==="legendary"||card.rarity==="ultimate")?" shimmer":"";
+  const glowClass=card.rarity==="ultimate"?" card-ultimate":card.rarity==="legendary"?" card-legend":"";
+  const isTop=card.ovr>=99;
+  // Position-based stats
+  const statMap={QB:[["THR",card.ovr],["AWR",Math.min(99,card.ovr-2)],["SPD",Math.min(99,card.ovr-8)]],WR:[["SPD",card.ovr],["CTH",Math.min(99,card.ovr-1)],["RTE",Math.min(99,card.ovr-3)]],RB:[["SPD",card.ovr],["POW",Math.min(99,card.ovr-3)],["AGI",Math.min(99,card.ovr-2)]],TE:[["CTH",card.ovr],["BLK",Math.min(99,card.ovr-5)],["SPD",Math.min(99,card.ovr-7)]],LB:[["TAK",card.ovr],["POW",Math.min(99,card.ovr-1)],["SPD",Math.min(99,card.ovr-4)]],DE:[["POW",card.ovr],["SPD",Math.min(99,card.ovr-3)],["FIN",Math.min(99,card.ovr-1)]],CB:[["COV",card.ovr],["SPD",Math.min(99,card.ovr-1)],["AWR",Math.min(99,card.ovr-3)]],S:[["COV",card.ovr],["SPD",Math.min(99,card.ovr-2)],["TAK",Math.min(99,card.ovr-4)]],DT:[["POW",card.ovr],["FIN",Math.min(99,card.ovr-1)],["AWR",Math.min(99,card.ovr-5)]],};
+  const stats=(statMap[card.pos]||[["SPD",card.ovr],["STR",Math.min(99,card.ovr-2)],["AWR",Math.min(99,card.ovr-4)]]);
+  const statsHTML=stats.map(([l,v])=>`<div class="cf-stat"><div class="cf-stat-lbl">${l}</div><div class="cf-stat-val" style="color:${col}">${v}</div></div>`).join("");
+  return `
+  <div class="pcard-wrap">
+  <div class="pcard" id="pc${idx}" onclick="flipCard(${idx})" data-rar="${card.rarity}">
+    <div class="pcard-inner">
+      <div class="pcard-back"><div class="pback-pattern"></div><div class="pback-logo">NFL<em>DRAFT</em>PRO</div></div>
+      <div class="pcard-front tape-${card.rarity}${shimmer}${glowClass}" style="background:${bg};border:2px solid ${border};box-shadow:${glow};border-radius:13px;">
+        <div class="cf-hdr">
           <div>
-            <div class="card-overall" style="color:${textColor};font-family:'Bebas Neue',cursive;font-size:1.8rem">${card.overall}</div>
-            <div class="card-pos" style="color:${textColor};font-size:0.65rem;font-weight:700;letter-spacing:1px">${card.pos}</div>
+            <div class="cf-ovr" style="color:${col}">${card.ovr}${isTop?`<span class="badge-99">MAX</span>`:""}</div>
+            <div class="cf-pos" style="color:${col};border:1px solid ${border}">${card.pos}</div>
           </div>
-          <div class="card-team-badge">${card.team}</div>
+          <div class="cf-team">${card.team}</div>
         </div>
-        <div class="card-player-area" style="font-size:3rem;">${card.emoji}</div>
-        <div class="card-stats">${cardStatsHTML(card)}</div>
-        <div class="card-footer">
-          <div class="card-name" style="color:white;font-size:0.75rem">${card.name}</div>
-          <div class="card-rarity-label" style="color:${textColor};font-size:0.6rem;letter-spacing:1.5px">${RARITIES[card.rarity].label}</div>
+        <div class="cf-photo">
+          <img class="photo" src="${card.photo}" alt="${card.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" loading="lazy">
+          <div class="cf-photo-fallback" style="display:none;">${card.pos==="QB"?"🏈":card.pos==="WR"||card.pos==="TE"?"⚡":card.pos==="RB"?"💨":"🔱"}</div>
+          <div class="cf-photo-gradient"></div>
+        </div>
+        <div class="cf-stats">${statsHTML}</div>
+        <div class="cf-footer">
+          <div class="cf-name">${card.name}</div>
+          <div class="cf-rarity" style="color:${col}">${rc.label}</div>
         </div>
       </div>
-    `;
-  }).join('');
+    </div>
+  </div>
+  </div>`;
 }
 
-// =====================
-// STATS RENDER
-// =====================
-function renderStats() {
-  const grid = document.getElementById('stats-grid');
-  const winRate = gameStats.wins + gameStats.losses > 0 ? Math.round(gameStats.wins / (gameStats.wins + gameStats.losses) * 100) : 0;
-  const statsData = [
-    { label: 'Coins Earned', value: gameStats.coinsEarned.toLocaleString() },
-    { label: 'Coins Spent', value: gameStats.coinsSpent.toLocaleString() },
-    { label: 'Packs Opened', value: gameStats.packsOpened },
-    { label: 'Total Cards', value: gameStats.totalCards },
-    { label: 'Wheel Spins', value: gameStats.spins },
-    { label: 'Coin Flips', value: gameStats.flips },
-    { label: 'Win Rate', value: winRate + '%' },
-    { label: 'Current Coins', value: coins.toLocaleString() },
-  ];
-  grid.innerHTML = statsData.map(s => `<div class="stat-card"><div class="stat-label">${s.label}</div><div class="stat-value">${s.value}</div></div>`).join('');
+function revealCards(cards, pack, qty){
+  document.getElementById("rev-title").textContent=`${qty>1?qty+"× ":""}${pack.name.toUpperCase()} — YOUR PULLS`;
+  document.getElementById("rev-cards").innerHTML=cards.map((c,i)=>cardHTML(c,i)).join("");
+  // Staggered auto-flip
+  cards.forEach((_,i)=>setTimeout(()=>{ const el=document.getElementById("pc"+i); if(el&&!el.classList.contains("flipped")) flipCard(i); },400+i*200));
+  if(cards.some(c=>c.rarity==="ultimate"||c.rarity==="legendary")) burst(document.getElementById("rev-cards"),25);
+}
 
-  const breakdown = document.getElementById('rarity-breakdown');
-  const counts = {};
-  RARITY_ORDER.forEach(r => counts[r] = collection.filter(c => c.rarity === r).length);
-  const total = collection.length || 1;
-  breakdown.innerHTML = RARITY_ORDER.map(r => {
-    const count = counts[r];
-    if (!count) return '';
-    const pct = Math.round(count / total * 100);
-    const color = rarityTextColor(r);
+function flipCard(idx){
+  const el=document.getElementById("pc"+idx);
+  if(!el) return;
+  el.classList.toggle("flipped");
+  if(el.classList.contains("flipped")&&(el.dataset.rar==="legendary"||el.dataset.rar==="ultimate")) burst(el,10);
+}
+
+function flipAll(){ document.querySelectorAll(".pcard").forEach(c=>c.classList.add("flipped")); }
+function closeOverlay(){ document.getElementById("overlay").classList.remove("on"); }
+
+// ══════════════════════════════════
+// COLLECTION
+// ══════════════════════════════════
+function renderCol(){
+  const f=document.getElementById("col-filter").value;
+  const s=document.getElementById("col-sort").value;
+  let cards=[...coll];
+  if(f!=="all") cards=cards.filter(c=>c.rarity===f);
+  if(s==="ovr") cards.sort((a,b)=>b.ovr-a.ovr);
+  else if(s==="rar") cards.sort((a,b)=>RAR_ORDER.indexOf(a.rarity)-RAR_ORDER.indexOf(b.rarity));
+  document.getElementById("col-count").textContent=`${cards.length} cards`;
+  const grid=document.getElementById("col-grid");
+  if(!cards.length){ grid.innerHTML=`<div class="col-empty"><div style="font-size:3rem;margin-bottom:.8rem;">📋</div><div>${f!=="all"?"No "+f+" cards yet.":"No cards yet — open some packs!"}</div></div>`; return; }
+  grid.innerHTML=cards.map((card,i)=>{
+    const bg=rarBg(card.rarity), border=rarBorder(card.rarity), col=rarCol(card.rarity);
+    const isTop=card.ovr>=99;
+    const glow=card.rarity==="ultimate"?`0 0 18px rgba(255,215,0,.4)`:card.rarity==="legendary"?`0 0 12px rgba(255,112,48,.35)`:"none";
     return `
-      <div style="display:flex; align-items:center; gap:0.8rem;">
-        <div style="width:80px; font-size:0.75rem; font-weight:700; color:${color}; text-transform:uppercase; letter-spacing:1px">${RARITIES[r].label}</div>
-        <div style="flex:1; background:rgba(255,255,255,0.06); border-radius:4px; height:8px; overflow:hidden">
-          <div style="width:${pct}%; height:100%; background:${color}; border-radius:4px; transition:width 0.8s"></div>
-        </div>
-        <div style="width:40px; text-align:right; font-size:0.85rem; color:var(--muted)">${count}</div>
-      </div>
-    `;
-  }).join('');
+    <div style="border-radius:12px;overflow:hidden;position:relative;background:${bg};border:2px solid ${border};box-shadow:${glow};" class="tape-${card.rarity}${(card.rarity==="legendary"||card.rarity==="ultimate")?" shimmer":""}${card.rarity==="ultimate"?" card-ultimate":card.rarity==="legendary"?" card-legend":""}">
+      <div class="cf-hdr"><div><div class="cf-ovr" style="color:${col};font-size:1.7rem">${card.ovr}${isTop?`<span class="badge-99">MAX</span>`:""}</div><div class="cf-pos" style="color:${col};font-size:.6rem;font-weight:700;letter-spacing:1px;display:inline-block;padding:1px 4px;border-radius:3px;border:1px solid ${border}">${card.pos}</div></div><div class="cf-team">${card.team}</div></div>
+      <div class="cf-photo" style="height:90px;"><img class="photo" src="${card.photo}" alt="${card.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" loading="lazy"><div class="cf-photo-fallback" style="display:none;font-size:3rem;">${card.pos==="QB"?"🏈":card.pos==="WR"||card.pos==="TE"?"⚡":card.pos==="RB"?"💨":"🔱"}</div><div class="cf-photo-gradient"></div></div>
+      <div class="cf-footer"><div class="cf-name" style="font-size:.72rem">${card.name}</div><div class="cf-rarity" style="color:${col};font-size:.55rem;letter-spacing:1.5px">${RARITIES[card.rarity].label}</div></div>
+    </div>`;
+  }).join("");
 }
 
-// =====================
-// UTILS
-// =====================
-function shuffleArr(arr) {
-  const a = [...arr];
-  for (let i = a.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i+1));
-    [a[i],a[j]] = [a[j],a[i]];
-  }
-  return a;
+// ══════════════════════════════════
+// STATS
+// ══════════════════════════════════
+function renderStats(){
+  const wr=gs.wins+gs.losses>0?Math.round(gs.wins/(gs.wins+gs.losses)*100):0;
+  const data=[
+    {l:"Current Coins",v:coins.toLocaleString()},{l:"Coins Earned",v:gs.earned.toLocaleString()},
+    {l:"Coins Spent",v:gs.spent.toLocaleString()},{l:"Packs Opened",v:gs.packs},
+    {l:"Cards Collected",v:gs.cards},{l:"Win Rate",v:wr+"%"},
+    {l:"Wheel Spins",v:gs.spins},{l:"Coin Flips",v:gs.flips},
+    {l:"Slot Pulls",v:gs.slots},{l:"Dice Rolls",v:gs.dice},
+    {l:"Scratch Cards",v:gs.scratch},{l:"Horse Races",v:gs.horses},
+  ];
+  document.getElementById("stat-grid").innerHTML=data.map(d=>`<div class="stat-c"><div class="stat-lbl">${d.l}</div><div class="stat-val">${d.v}</div></div>`).join("");
+  const total=coll.length||1;
+  document.getElementById("rar-breakdown").innerHTML=RAR_ORDER.map(r=>{
+    const cnt=coll.filter(c=>c.rarity===r).length; if(!cnt) return "";
+    const pct=Math.round(cnt/total*100), col=rarCol(r);
+    return `<div style="display:flex;align-items:center;gap:.7rem;"><div style="width:76px;font-size:.72rem;font-weight:700;color:${col};text-transform:uppercase;letter-spacing:1px">${RARITIES[r].label}</div><div style="flex:1;background:rgba(255,255,255,.06);border-radius:3px;height:7px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${col};border-radius:3px;transition:width .8s"></div></div><div style="width:36px;text-align:right;font-size:.8rem;color:var(--muted)">${cnt}</div></div>`;
+  }).join("");
 }
 
-function spawnBurst(ref, count = 15) {
-  const box = ref.getBoundingClientRect ? ref.getBoundingClientRect() : { left: window.innerWidth/2, top: window.innerHeight/2, width: 0, height: 0 };
-  const cx = box.left + box.width/2;
-  const cy = box.top + box.height/2;
-  const emojis = ['⭐','✨','🏆','💫','🎉','🏈','💎','🥇'];
-  const colors = ['#FFD700','#FF4500','#013369','#D50A0A','#00FF88'];
-  for (let i = 0; i < count; i++) {
-    const el = document.createElement('div');
-    el.className = 'burst-star';
-    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
-    const dist = 80 + Math.random() * 120;
-    el.style.cssText = `left:${cx}px;top:${cy}px;--tx:${Math.cos(angle)*dist}px;--ty:${Math.sin(angle)*dist}px;animation-delay:${Math.random()*0.3}s;`;
-    el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 1500);
-  }
-}
-
-// =====================
+// ══════════════════════════════════
 // INIT
-// =====================
+// ══════════════════════════════════
 drawWheel();
 renderStore();
 resetMystery();
-document.getElementById('coin-count').textContent = coins.toLocaleString();
-
-// Update stats periodically
-setInterval(() => {
-  if (document.getElementById('tab-stats').classList.contains('active')) renderStats();
-}, 5000);
+buildSlots();
+document.getElementById("coin-count").textContent=coins.toLocaleString();
+// Initialize scratch canvas
+(()=>{ const cv=document.getElementById("scratch-canvas"); const ctx=cv.getContext("2d"); ctx.fillStyle="#2a3a55"; ctx.fillRect(0,0,200,120); ctx.fillStyle="rgba(255,215,0,.15)"; ctx.font="bold 12px 'Barlow Condensed',sans-serif"; ctx.textAlign="center"; ctx.fillText("✦ BUY A CARD ✦",100,60); })();
 </script>
 </body>
 </html>
